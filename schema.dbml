@@ -1,43 +1,25 @@
-// When2Meet Clone Database Schema (DBML)
+// When2Meet Clone Database Schema (DBML) - Simplified Design
 
 Table events {
   id int [pk, increment]
-  name varchar(255) [not null]
-  hash varchar(255) [unique, not null]
-  start_time time [not null]
-  end_time time [not null]
-  time_zone varchar(100) [not null, default: 'UTC']
+  name varchar(128) [not null]
+  hash varchar(8) [unique, not null]
   created_at timestamptz [default: `CURRENT_TIMESTAMP`]
   updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
 }
 
-Table event_dates {
+Table event_datetime {
   id int [pk, increment]
+  event_id int [ref: > events.id]
   date date [not null]
-  event_id int [ref: > events.id]
-  created_at timestamptz [default: `CURRENT_TIMESTAMP`]
-}
-
-Enum day_of_week_enum {
-  monday
-  tuesday
-  wednesday
-  thursday
-  friday
-  saturday
-  sunday
-}
-
-Table event_day_of_week {
-  id int [pk, increment]
-  day_of_week day_of_week_enum [not null]
-  event_id int [ref: > events.id]
+  start_time time [not null]
+  end_time time [not null]
   created_at timestamptz [default: `CURRENT_TIMESTAMP`]
 }
 
 Table users {
   id int [pk, increment]
-  name varchar(255) [not null]
+  name varchar(64) [not null]
   password varchar(255)
   event_id int [ref: > events.id]
   created_at timestamptz [default: `CURRENT_TIMESTAMP`]
@@ -47,18 +29,18 @@ Table users {
   }
 }
 
-Table availability {
+Table available_datetime {
   id int [pk, increment]
+  event_id int [ref: > events.id]
+  user_id int [ref: > users.id]
+  date date [not null]
   start_time time [not null]
   end_time time [not null]
-  available_date date
-  available_day_of_week day_of_week_enum
-  user_id int [ref: > users.id]
-  event_id int [ref: > events.id]
   created_at timestamptz [default: `CURRENT_TIMESTAMP`]
+  updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
   
   Note: '''
-  Constraint: Either available_date OR available_day_of_week must be set, but not both.
-  This supports two modes: specific dates or recurring days of week.
+  User availability records with same structure as event_datetime.
+  Each record represents a user's availability for a specific date and time range.
   '''
 }

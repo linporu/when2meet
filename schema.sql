@@ -1,76 +1,45 @@
--- When2Meet Database Schema (PostgreSQL)
+-- When2Meet Database Schema (PostgreSQL) - Simplified Design
 
--- Events table
+-- Events table (simplified)
 CREATE TABLE events (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    hash VARCHAR(255) UNIQUE NOT NULL,
-    start_time TIME NOT NULL,
-    end_time TIME NOT NULL,
-    time_zone VARCHAR(100) NOT NULL DEFAULT 'UTC',
+    name VARCHAR(128) NOT NULL,
+    hash VARCHAR(8) UNIQUE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Event dates table (for specific date mode)
-CREATE TABLE event_dates (
+-- Event datetime table (contains date and time information)
+CREATE TABLE event_datetime (
     id SERIAL PRIMARY KEY,
+    event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
     date DATE NOT NULL,
-    event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Day of week enum type
-CREATE TYPE day_of_week_enum AS ENUM ('monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday');
-
--- Event day of week table (for day of week mode)
-CREATE TABLE event_day_of_week (
-    id SERIAL PRIMARY KEY,
-    day_of_week day_of_week_enum NOT NULL,
-    event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Users table (event-specific users)
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(64) NOT NULL,
     password VARCHAR(255),
     event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Availability table
-CREATE TABLE availability (
+-- Available datetime table (user availability with same structure as event_datetime)
+CREATE TABLE available_datetime (
     id SERIAL PRIMARY KEY,
+    event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
-    available_date DATE,
-    available_day_of_week day_of_week_enum,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Constraint to ensure either available_date or available_day_of_week is set
-    CONSTRAINT check_availability_date_or_dow CHECK (
-        (available_date IS NOT NULL AND available_day_of_week IS NULL) OR
-        (available_date IS NULL AND available_day_of_week IS NOT NULL)
-    )
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Unique constraint to prevent duplicate user names within the same event
 CREATE UNIQUE INDEX idx_unique_user_name_per_event ON users(name, event_id);
 
--- Trigger to automatically update updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_events_updated_at 
-    BEFORE UPDATE ON events 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column();
