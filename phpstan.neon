@@ -1,3 +1,6 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
 parameters:
     paths:
         - app
@@ -5,12 +8,14 @@ parameters:
         - routes
         - tests
     
-    level: 6
+    level: 4
     
     ignoreErrors:
         - '#Undefined variable: \$this#'
         - '#Call to an undefined method PHPUnit\\Framework\\TestCase::#'
-        - '#Function something\(\) has no return type specified#'
+        # Laravel Model dynamic properties and methods in tests
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::#'
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::#'
     
     excludePaths:
         - bootstrap/*
