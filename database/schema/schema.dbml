@@ -17,7 +17,7 @@ Table event_datetime {
   created_at timestamptz [default: `CURRENT_TIMESTAMP`]
 }
 
-Table users {
+Table event_participants {
   id int [pk, increment]
   name varchar(64) [not null]
   password varchar(255)
@@ -32,7 +32,7 @@ Table users {
 Table available_datetime {
   id int [pk, increment]
   event_id int [ref: > events.id]
-  user_id int [ref: > users.id]
+  participant_id int [ref: > event_participants.id]
   date date [not null]
   start_time time [not null]
   end_time time [not null]
@@ -40,7 +40,7 @@ Table available_datetime {
   updated_at timestamptz [default: `CURRENT_TIMESTAMP`]
   
   Note: '''
-  User availability records with same structure as event_datetime.
-  Each record represents a user's availability for a specific date and time range.
+  Participant availability records with same structure as event_datetime.
+  Each record represents a participant's availability for a specific date and time range.
   '''
 }

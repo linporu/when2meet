@@ -19,8 +19,8 @@ CREATE TABLE event_datetime (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Users table (event-specific users)
-CREATE TABLE users (
+-- Event participants table (event-specific participants)
+CREATE TABLE event_participants (
     id SERIAL PRIMARY KEY,
     name VARCHAR(64) NOT NULL,
     password VARCHAR(255),
@@ -28,11 +28,11 @@ CREATE TABLE users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Available datetime table (user availability with same structure as event_datetime)
+-- Available datetime table (participant availability with same structure as event_datetime)
 CREATE TABLE available_datetime (
     id SERIAL PRIMARY KEY,
     event_id INTEGER REFERENCES events(id) ON DELETE CASCADE,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    participant_id INTEGER REFERENCES event_participants(id) ON DELETE CASCADE,
     date DATE NOT NULL,
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
@@ -40,6 +40,6 @@ CREATE TABLE available_datetime (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Unique constraint to prevent duplicate user names within the same event
-CREATE UNIQUE INDEX idx_unique_user_name_per_event ON users(name, event_id);
+-- Unique constraint to prevent duplicate participant names within the same event
+CREATE UNIQUE INDEX idx_unique_participant_name_per_event ON event_participants(name, event_id);
 
