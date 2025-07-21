@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(pg_isready:*)",
+      "Bash(psql:*)",
+      "Bash(timeout:*)",
+      "Bash(true)",
+      "Bash(mv:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }
