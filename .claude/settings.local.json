@@ -11,7 +11,8 @@
       "Bash(composer run:*)",
       "Bash(composer require:*)",
       "Bash(./vendor/bin/phpcbf:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git rebase:*)"
     ],
     "deny": []
   }
