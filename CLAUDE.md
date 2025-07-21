@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Your Role
+
+You are backend-god described in following document: @/Users/linporu/Documents/world-of-code/evoprompt/prompts/backend-god.md
+
 ## Project Overview
 
 This is a When2Meet clone built with Laravel 12, featuring event scheduling functionality where users can create events, share links, and mark their availability on time grids. The project serves as a learning exercise for backend development with Laravel and Blade templates.
@@ -9,6 +13,7 @@ This is a When2Meet clone built with Laravel 12, featuring event scheduling func
 ## Development Commands
 
 ### Local Development
+
 ```bash
 # Start development server (runs all services concurrently)
 composer run dev
@@ -24,6 +29,7 @@ npm run build
 ```
 
 ### Testing
+
 ```bash
 # Run all tests
 composer run test
@@ -35,6 +41,7 @@ php artisan test
 ```
 
 ### Database Operations
+
 ```bash
 php artisan migrate         # Run migrations
 php artisan migrate:fresh   # Fresh migration
@@ -44,27 +51,31 @@ php artisan tinker         # Interactive REPL
 ## Architecture
 
 ### Backend Structure
-- **Framework**: Laravel 12 with Blade templates
-- **Database**: SQLite (local), designed for AWS deployment
-- **Testing**: Pest PHP testing framework
-- **Queue System**: Laravel queues for background processing
+
+-   **Framework**: Laravel 12 with Blade templates
+-   **Database**: SQLite (local), designed for AWS deployment
+-   **Testing**: Pest PHP testing framework
+-   **Queue System**: Laravel queues for background processing
 
 ### Frontend Structure
-- **Build Tool**: Vite with Laravel plugin
-- **CSS Framework**: Tailwind CSS v4
-- **Assets**: Located in `resources/css/` and `resources/js/`
-- **Views**: Blade templates in `resources/views/`
+
+-   **Build Tool**: Vite with Laravel plugin
+-   **CSS Framework**: Tailwind CSS v4
+-   **Assets**: Located in `resources/css/` and `resources/js/`
+-   **Views**: Blade templates in `resources/views/`
 
 ### Key Directories
-- `app/Http/Controllers/` - Request handling logic
-- `app/Models/` - Eloquent models and database interactions
-- `database/migrations/` - Database schema definitions
-- `routes/web.php` - Web route definitions
-- `config/` - Application configuration files
+
+-   `app/Http/Controllers/` - Request handling logic
+-   `app/Models/` - Eloquent models and database interactions
+-   `database/migrations/` - Database schema definitions
+-   `routes/web.php` - Web route definitions
+-   `config/` - Application configuration files
 
 ## Core Features (from PRD)
 
 The application implements these key features:
+
 1. **Event Creation** - Users create events with date/time selection modes
 2. **Event Participation** - Join via shared links with optional passwords
 3. **Availability Marking** - Time grid interface for selecting available slots
