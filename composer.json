@@ -70,7 +70,6 @@
         "stan": "phpstan analyse --no-progress --quiet --memory-limit=256M",
         "stan-verbose": "phpstan analyse --memory-limit=256M",
         "quality": [
-            "@fix",
             "@check",
             "@phpcs",
             "@stan"

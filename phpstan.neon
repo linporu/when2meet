@@ -8,8 +8,9 @@ parameters:
     level: 6
     
     ignoreErrors:
-        - '#Call to an undefined method [a-zA-Z0-9\\_]+::factory\(\)#'
-        - '#Property [a-zA-Z0-9\\_]+::\$[a-zA-Z0-9\\_]+ is never read, only written#'
+        - '#Undefined variable: \$this#'
+        - '#Call to an undefined method PHPUnit\\Framework\\TestCase::#'
+        - '#Function something\(\) has no return type specified#'
     
     excludePaths:
         - bootstrap/*
@@ -18,16 +19,8 @@ parameters:
         - node_modules/*
         - '*/cache/*'
     
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
-    
     bootstrapFiles:
         - vendor/autoload.php
-    
-    strictRules:
-        noVariableVariables: false
-        disallowedConstructs: false
-        disallowedFunctionCalls: false
         
     parallel:
         maximumNumberOfProcesses: 32

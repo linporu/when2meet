@@ -9,7 +9,9 @@
       "Bash(mv:*)",
       "Bash(cp:*)",
       "Bash(composer run:*)",
-      "Bash(composer require:*)"
+      "Bash(composer require:*)",
+      "Bash(./vendor/bin/phpcbf:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
