@@ -7,7 +7,8 @@
       "Bash(timeout:*)",
       "Bash(true)",
       "Bash(mv:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(composer run:*)"
     ],
     "deny": []
   }
