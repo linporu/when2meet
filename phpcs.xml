@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="./vendor/squizlabs/php_codesniffer/phpcs.xsd">
+
+    <arg name="basepath" value="."/>
+    <arg name="cache" value=".phpcs-cache"/>
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+    <arg name="parallel" value="80"/>
+
+    <!-- Show progress -->
+    <arg value="p"/>
+
+    <!-- Include the whole Laravel project -->
+    <file>./app</file>
+    <file>./config</file>
+    <file>./database</file>
+    <file>./routes</file>
+    <file>./tests</file>
+
+    <!-- Exclude patterns -->
+    <exclude-pattern>*/bootstrap/cache/*</exclude-pattern>
+    <exclude-pattern>*/storage/*</exclude-pattern>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*/*.js</exclude-pattern>
+    <exclude-pattern>*/*.css</exclude-pattern>
+
+    <!-- Include PSR-12 standards -->
+    <rule ref="PSR12"/>
+
+    <!-- Additional rules for Laravel -->
+    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+    <rule ref="Generic.Commenting.Todo"/>
+    <rule ref="Generic.ControlStructures.InlineControlStructure"/>
+    <rule ref="Generic.Formatting.DisallowMultipleStatements"/>
+    <rule ref="Generic.Formatting.SpaceAfterCast"/>
+    <rule ref="Generic.NamingConventions.ConstructorName"/>
+    <rule ref="Generic.PHP.DeprecatedFunctions"/>
+    <rule ref="Generic.PHP.LowerCaseKeyword"/>
+    <rule ref="Generic.Strings.UnnecessaryStringConcat"/>
+    <rule ref="Generic.WhiteSpace.IncrementDecrementSpacing"/>
+    <rule ref="PSR1.Classes.ClassDeclaration"/>
+    <rule ref="PSR1.Files.SideEffects"/>
+
+    <!-- Show warnings -->
+    <config name="show_warnings" value="1"/>
+
+    <!-- Ignore missing file errors -->
+    <config name="ignore_warnings_on_exit" value="1"/>
+    <config name="ignore_errors_on_exit" value="0"/>
+
+</ruleset>
