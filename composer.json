@@ -15,7 +15,6 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
-        "friendsofphp/php-cs-fixer": "^3.84",
         "larastan/larastan": "^3.6",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",
@@ -63,9 +62,9 @@
             "@php artisan config:clear --ansi",
             "@php artisan test --quiet"
         ],
-        "fix": "php-cs-fixer fix --quiet",
-        "check": "php-cs-fixer fix --dry-run --diff --quiet",
-        "check-verbose": "php-cs-fixer fix --dry-run --diff",
+        "fix": "./vendor/bin/pint --quiet",
+        "check": "./vendor/bin/pint --test --quiet",
+        "check-verbose": "./vendor/bin/pint --test",
         "stan": "phpstan analyse --no-progress --quiet --memory-limit=256M",
         "stan-verbose": "phpstan analyse --memory-limit=256M",
         "quality": [

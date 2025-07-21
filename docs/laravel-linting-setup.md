@@ -1,6 +1,6 @@
-# Laravel Linting 配置指南
+# Laravel Linting 配置指南 (使用 Laravel Pint)
 
-完整的 Laravel 專案 linting 設定指南，提供實用且 Laravel 友善的程式碼品質工具配置。
+完整的 Laravel 專案 linting 設定指南，使用 Laravel Pint 和 PHPStan 提供實用且 Laravel 友善的程式碼品質工具配置。
 
 ## 🎯 設計哲學
 
@@ -11,7 +11,7 @@
 - **工具統一**：避免多個工具間的衝突
 
 ### 工具選擇
-- **PHP CS Fixer**：程式碼格式化（替代 Laravel Pint 和 PHPCS）
+- **Laravel Pint**：Laravel 官方程式碼格式化工具（基於 PHP CS Fixer）
 - **PHPStan + Larastan**：靜態分析（Laravel 專用擴展）
 - **Level 4 設定**：平衡嚴格性和實用性
 
@@ -20,12 +20,13 @@
 ### 1. Composer 依賴
 
 ```bash
-# 安裝 linting 工具
-composer require --dev friendsofphp/php-cs-fixer
+# 安裝 linting 工具（Laravel Pint 通常已包含在 Laravel 專案中）
+composer require --dev laravel/pint
 composer require --dev phpstan/phpstan
 composer require --dev larastan/larastan
 
-# 如果已有 squizlabs/php_codesniffer，可選擇移除避免衝突
+# 如果有其他格式化工具，可選擇移除避免衝突
+composer remove --dev friendsofphp/php-cs-fixer
 composer remove --dev squizlabs/php_codesniffer
 ```
 
@@ -33,116 +34,34 @@ composer remove --dev squizlabs/php_codesniffer
 
 ```bash
 # 檢查工具版本
-./vendor/bin/php-cs-fixer --version
+./vendor/bin/pint --version
 ./vendor/bin/phpstan --version
 ```
 
 ## ⚙️ 配置文件
 
-### 1. PHP CS Fixer 配置 (`.php-cs-fixer.php`)
+### 1. Laravel Pint 配置 (`pint.json`，可選)
 
-```php
-<?php
+Laravel Pint 預設使用 "laravel" preset，通常不需要額外配置。如需自訂，可建立 `pint.json`：
 
-declare(strict_types=1);
-
-$finder = PhpCsFixer\Finder::create()
-    ->in([
-        __DIR__ . '/app',
-        __DIR__ . '/config',
-        __DIR__ . '/database',
-        __DIR__ . '/routes',
-        __DIR__ . '/tests',
-    ])
-    ->exclude([
-        'bootstrap/cache',
-        'storage',
-        'vendor',
-        'node_modules',
-    ])
-    ->name('*.php')
-    ->ignoreDotFiles(true)
-    ->ignoreVCS(true);
-
-return (new PhpCsFixer\Config())
-    ->setRiskyAllowed(true)
-    ->setRules([
-        '@PSR12' => true,
-        '@PHP82Migration' => true,
-        'array_syntax' => ['syntax' => 'short'],
-        'ordered_imports' => ['sort_algorithm' => 'alpha'],
-        'no_unused_imports' => true,
-        'not_operator_with_successor_space' => false,
-        'trailing_comma_in_multiline' => true,
-        'phpdoc_scalar' => true,
-        'unary_operator_spaces' => true,
-        'binary_operator_spaces' => true,
-        'phpdoc_single_line_var_spacing' => true,
-        'phpdoc_var_without_name' => true,
-        'method_chaining_indentation' => true,
-        'general_phpdoc_tag_rename' => true,
-        'heredoc_to_nowdoc' => true,
-        'include' => true,
-        'increment_style' => ['style' => 'post'],
-        'linebreak_after_opening_tag' => true,
-        'magic_constant_casing' => true,
-        'magic_method_casing' => true,
-        'modernize_types_casting' => true,
-        'native_function_casing' => true,
-        'no_alias_functions' => true,
-        'no_empty_comment' => true,
-        'no_empty_phpdoc' => true,
-        'no_extra_blank_lines' => [
-            'tokens' => [
-                'extra',
-                'throw',
-                'use',
-            ]
-        ],
-        'no_leading_namespace_whitespace' => true,
-        'no_mixed_echo_print' => true,
-        'no_multiline_whitespace_around_double_arrow' => true,
-        'no_short_bool_cast' => true,
-        'no_singleline_whitespace_before_semicolons' => true,
-        'no_spaces_around_offset' => true,
-        'no_trailing_comma_in_list_call' => true,
-        'no_trailing_comma_in_singleline_array' => true,
-        'no_unneeded_control_parentheses' => true,
-        'no_unreachable_default_argument_value' => true,
-        'no_useless_return' => true,
-        'object_operator_without_whitespace' => true,
-        'php_unit_fqcn_annotation' => true,
-        'phpdoc_align' => true,
-        'phpdoc_annotation_without_dot' => true,
-        'phpdoc_indent' => true,
-        'phpdoc_inline_tag_normalizer' => true,
-        'phpdoc_no_access' => true,
-        'phpdoc_no_alias_tag' => true,
-        'phpdoc_no_empty_return' => true,
-        'phpdoc_no_package' => true,
-        'phpdoc_no_useless_inheritdoc' => true,
-        'phpdoc_return_self_reference' => true,
-        'phpdoc_summary' => true,
-        'phpdoc_to_comment' => true,
-        'phpdoc_trim' => true,
-        'phpdoc_types' => true,
-        'phpdoc_var_without_name' => true,
-        'return_type_declaration' => true,
-        'semicolon_after_instruction' => true,
-        'short_scalar_cast' => true,
-        'simplified_null_return' => true,
-        'single_blank_line_at_eof' => true,
-        'single_class_element_per_statement' => true,
-        'single_line_comment_style' => true,
-        'single_quote' => true,
-        'space_after_semicolon' => true,
-        'standardize_not_equals' => true,
-        'ternary_operator_spaces' => true,
-        'trim_array_spaces' => true,
-        'whitespace_after_comma_in_array' => true,
-    ])
-    ->setFinder($finder);
+```json
+{
+    "preset": "laravel",
+    "rules": {
+        "simplified_null_return": true,
+        "braces": true,
+        "new_with_braces": true
+    },
+    "exclude": [
+        "bootstrap/cache",
+        "storage",
+        "vendor",
+        "node_modules"
+    ]
+}
 ```
+
+> **注意**：大多數情況下，Laravel Pint 的預設配置就足夠了，不需要建立 `pint.json`。
 
 ### 2. PHPStan 配置 (`phpstan.neon`)
 
@@ -187,9 +106,9 @@ parameters:
 ```json
 {
     "scripts": {
-        "fix": "php-cs-fixer fix --quiet",
-        "check": "php-cs-fixer fix --dry-run --diff --quiet",
-        "check-verbose": "php-cs-fixer fix --dry-run --diff",
+        "fix": "./vendor/bin/pint --quiet",
+        "check": "./vendor/bin/pint --test --quiet",
+        "check-verbose": "./vendor/bin/pint --test",
         "stan": "phpstan analyse --no-progress --quiet --memory-limit=256M",
         "stan-verbose": "phpstan analyse --memory-limit=256M",
         "quality": [
@@ -208,23 +127,35 @@ parameters:
 }
 ```
 
+### 4. VS Code 設定 (`.vscode/settings.json`)
+
+```json
+{
+    "[php]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "open-southeners.laravel-pint"
+    }
+}
+```
+
 ## 🚀 設定步驟
 
 ### 1. 建立配置文件
 
 ```bash
-# 複製上述配置到對應文件
-touch .php-cs-fixer.php phpstan.neon
+# 建立 PHPStan 配置
+touch phpstan.neon
 
-# 如果存在 phpcs.xml，移除以避免衝突
-rm phpcs.xml
+# Laravel Pint 不需要額外配置檔案（除非需要自訂）
+# 如果存在其他格式化工具配置，移除以避免衝突
+rm .php-cs-fixer.php phpcs.xml 2>/dev/null || true
 ```
 
 ### 2. 更新 composer.json
 
 ```bash
 # 編輯 composer.json，新增上述 scripts
-# 移除 phpcs 相關的 scripts（如果有的話）
+# 移除其他格式化工具的 scripts（如果有的話）
 ```
 
 ### 3. 初次運行
@@ -299,11 +230,11 @@ grep -n "larastan" phpstan.neon
 
 **解決**：
 ```bash
-# 移除 PHPCS 以避免與 PHP CS Fixer 衝突
-composer remove --dev squizlabs/php_codesniffer
-rm phpcs.xml
+# 移除其他格式化工具以避免與 Laravel Pint 衝突
+composer remove --dev friendsofphp/php-cs-fixer squizlabs/php_codesniffer
+rm .php-cs-fixer.php phpcs.xml 2>/dev/null || true
 
-# 統一使用 PHP CS Fixer
+# 統一使用 Laravel Pint
 composer run fix
 ```
 
@@ -378,10 +309,20 @@ composer run quality
 
 ### 3. IDE 整合
 
-**VS Code**：安裝 `PHP CS Fixer` 和 `PHPStan` 擴展
+**VS Code**：安裝 `Laravel Pint` 和 `PHPStan` 擴展
+
+建立 `.vscode/settings.json`：
+```json
+{
+    "[php]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "open-southeners.laravel-pint"
+    }
+}
+```
 
 **PhpStorm**：
-- Settings → PHP → Quality Tools → PHP CS Fixer
+- Settings → PHP → Quality Tools → Laravel Pint (使用 External Tool)
 - Settings → PHP → Quality Tools → PHPStan
 
 ### 4. CI/CD 配置
@@ -405,13 +346,30 @@ jobs:
       - run: composer run ci
 ```
 
+## 🌟 Laravel Pint 優勢
+
+### 相比 PHP CS Fixer 的優勢
+- **官方工具**：Laravel 官方支援，與生態系統整合更佳
+- **零配置**：開箱即用，預設設定就很適合 Laravel 專案
+- **簡化命令**：`./vendor/bin/pint` 比 `php-cs-fixer` 更簡潔
+- **Laravel 優化**：針對 Laravel 專案的慣例和模式優化
+
+### 常用指令對比
+
+| 功能 | Laravel Pint | PHP CS Fixer |
+|------|-------------|-------------|
+| 修復格式 | `./vendor/bin/pint` | `./vendor/bin/php-cs-fixer fix` |
+| 檢查格式 | `./vendor/bin/pint --test` | `./vendor/bin/php-cs-fixer fix --dry-run` |
+| 指定檔案 | `./vendor/bin/pint app/Models` | `./vendor/bin/php-cs-fixer fix app/Models` |
+
 ## 📝 版本歷史
 
-- **v1.0**: 初始版本，基於實際 Laravel 專案優化
+- **v2.0**: 改用 Laravel Pint，簡化配置
+- **v1.0**: 初始版本，使用 PHP CS Fixer
 - 支援 PHP 8.2+ 和 Laravel 12+
 - Level 4 PHPStan 設定平衡實用性與嚴格性
 - Laravel 友善的錯誤忽略規則
 
 ---
 
-💡 **提示**：這個配置已在實際專案中驗證，從 189 個錯誤降至 0 個，同時保持 Laravel 開發的流暢度。
+💡 **提示**：這個配置使用 Laravel 官方工具 Laravel Pint，已在實際專案中驗證，提供更簡潔的配置和更好的 Laravel 整合體驗。

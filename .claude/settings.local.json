@@ -15,7 +15,8 @@
       "Bash(git rebase:*)",
       "Bash(composer install:*)",
       "Bash(composer quality-strict:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(./vendor/bin/pint:*)"
     ],
     "deny": []
   }

@@ -56,7 +56,7 @@ describe('Event Model', function () {
     });
 
     it('has fillable attributes', function () {
-        $event = new Event();
+        $event = new Event;
 
         expect($event->getFillable())->toContain('name', 'hash');
     });
