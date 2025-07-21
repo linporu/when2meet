@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class AvailableDatetime extends Model
 {
@@ -43,7 +43,7 @@ class AvailableDatetime extends Model
     public function scopeForTimeRange($query, $startTime, $endTime)
     {
         return $query->where('start_time', '>=', $startTime)
-                    ->where('end_time', '<=', $endTime);
+            ->where('end_time', '<=', $endTime);
     }
 
     public function isOverlapping(AvailableDatetime $other): bool

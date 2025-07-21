@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class EventParticipant extends Model
 {
@@ -43,7 +43,7 @@ class EventParticipant extends Model
         if (empty($this->password)) {
             return true;
         }
-        
+
         return password_verify($password, $this->password);
     }
 }
