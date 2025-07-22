@@ -28,16 +28,43 @@ npm run dev                 # Vite dev server
 npm run build
 ```
 
-### Testing
+### Testing & Code Quality
+
+#### TDD Development Workflow
+Follow Test-Driven Development practices:
+1. Write failing test first
+2. Implement minimal code to pass test
+3. Refactor while keeping tests green
+4. Run `composer run test` to verify all tests pass
 
 ```bash
-# Run all tests
+# Run all tests (with config clear)
 composer run test
-# Or directly:
-php artisan test
 
-# Code formatting (Laravel Pint)
+# If tests fail, fix issues before proceeding
+```
+
+#### Code Quality Checks
+```bash
+# Auto-fix formatting and run quality checks
+composer run code
+
+# If composer code exits with code 1:
+# 1. Run verbose linting to understand issues
+composer run lint-verbose
+
+# 2. Analyze errors following @/Users/linporu/Documents/world-of-code/evoprompt/prompts/linter-god.md strategy:
+#    - Read configuration files
+#    - Pattern recognition and grouping
+#    - Plan fixes without deleting code
+#    - Discuss strategy before implementation
+#    - Get approval before executing fixes
+
+# Manual formatting (Laravel Pint)
 ./vendor/bin/pint
+
+# Manual linting
+composer run lint
 ```
 
 ### Database Operations
@@ -71,15 +98,6 @@ php artisan tinker         # Interactive REPL
 -   `database/migrations/` - Database schema definitions
 -   `routes/web.php` - Web route definitions
 -   `config/` - Application configuration files
-
-## Core Features (from PRD)
-
-The application implements these key features:
-
-1. **Event Creation** - Users create events with date/time selection modes
-2. **Event Participation** - Join via shared links with optional passwords
-3. **Availability Marking** - Time grid interface for selecting available slots
-4. **Group Visualization** - Color-coded availability overlap display
 
 ## Deployment Target
 
