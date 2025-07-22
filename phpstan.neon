@@ -1,0 +1,31 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - database
+        - routes
+        - tests
+    
+    level: 4
+    
+    ignoreErrors:
+        - '#Undefined variable: \$this#'
+        - '#Call to an undefined method PHPUnit\\Framework\\TestCase::#'
+        # Laravel Model dynamic properties and methods in tests
+        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::#'
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::#'
+    
+    excludePaths:
+        - bootstrap/*
+        - storage/*
+        - vendor/*
+        - node_modules/*
+        - '*/cache/*'
+    
+    bootstrapFiles:
+        - vendor/autoload.php
+        
+    parallel:
+        maximumNumberOfProcesses: 32

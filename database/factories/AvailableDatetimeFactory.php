@@ -2,9 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\AvailableDatetime;
 use App\Models\Event;
 use App\Models\EventParticipant;
-use App\Models\AvailableDatetime;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AvailableDatetimeFactory extends Factory
@@ -17,18 +17,18 @@ class AvailableDatetimeFactory extends Factory
         $startHour = $this->faker->numberBetween(8, 20);
         $startMinute = $this->faker->randomElement([0, 15, 30, 45]);
         $startTime = sprintf('%02d:%02d:00', $startHour, $startMinute);
-        
+
         // Generate reasonable duration for meetings/appointments (30 minutes to 4 hours)
         $durationMinutes = $this->faker->numberBetween(30, 240);
-        
+
         // Calculate end time
         $endTimestamp = strtotime("1970-01-01 $startTime") + ($durationMinutes * 60);
-        
+
         // Ensure we don't exceed the day boundary
         if ($endTimestamp >= strtotime('1970-01-02 00:00:00')) {
             $endTimestamp = strtotime('1970-01-01 23:59:59');
         }
-        
+
         $endTime = date('H:i:s', $endTimestamp);
 
         return [

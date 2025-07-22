@@ -16,18 +16,18 @@ class EventDatetimeFactory extends Factory
         $startHour = $this->faker->numberBetween(8, 18);
         $startMinute = $this->faker->randomElement([0, 30]);
         $startTime = sprintf('%02d:%02d:00', $startHour, $startMinute);
-        
+
         // Generate reasonable duration for events (1 to 8 hours)
         $durationMinutes = $this->faker->numberBetween(60, 480);
-        
+
         // Calculate end time
         $endTimestamp = strtotime("1970-01-01 $startTime") + ($durationMinutes * 60);
-        
+
         // Ensure we don't exceed the day boundary
         if ($endTimestamp >= strtotime('1970-01-02 00:00:00')) {
             $endTimestamp = strtotime('1970-01-01 23:59:59');
         }
-        
+
         $endTime = date('H:i:s', $endTimestamp);
 
         return [

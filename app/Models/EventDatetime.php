@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class EventDatetime extends Model
 {
@@ -33,8 +33,8 @@ class EventDatetime extends Model
     public function availableDatetimes()
     {
         return $this->hasMany(AvailableDatetime::class, 'event_id', 'event_id')
-                    ->where('date', $this->date)
-                    ->where('start_time', '>=', $this->start_time)
-                    ->where('end_time', '<=', $this->end_time);
+            ->where('date', $this->date)
+            ->where('start_time', '>=', $this->start_time)
+            ->where('end_time', '<=', $this->end_time);
     }
 }

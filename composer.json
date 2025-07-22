@@ -15,13 +15,16 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.6",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.41",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^3.8",
-        "pestphp/pest-plugin-laravel": "^3.2"
+        "pestphp/pest-plugin-laravel": "^3.2",
+        "phpstan/phpstan": "^2.1",
+        "squizlabs/php_codesniffer": "^3.13"
     },
     "autoload": {
         "psr-4": {
@@ -58,6 +61,23 @@
         "test": [
             "@php artisan config:clear --ansi",
             "@php artisan test --quiet"
+        ],
+        "fix": "./vendor/bin/pint --quiet",
+        "lint": [
+            "./vendor/bin/pint --test --quiet",
+            "phpstan analyse --no-progress --quiet --memory-limit=256M"
+        ],
+        "lint-verbose": [
+            "./vendor/bin/pint --test",
+            "phpstan analyse --memory-limit=256M"
+        ],
+        "code": [
+            "@fix",
+            "@lint"
+        ],
+        "ci": [
+            "@test",
+            "@lint"
         ]
     },
     "extra": {
