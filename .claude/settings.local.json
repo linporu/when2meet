@@ -21,7 +21,9 @@
       "Bash(node:*)",
       "Bash(npm:*)",
       "Bash(mkdir:*)",
-      "Bash(brew services:*)"
+      "Bash(brew services:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh run list:*)"
     ],
     "deny": []
   }

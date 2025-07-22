@@ -76,8 +76,9 @@
             "@lint"
         ],
         "ci": [
-            "@test",
-            "@lint"
+            "@php artisan config:clear --ansi",
+            "@php artisan test",
+            "@lint-verbose"
         ]
     },
     "extra": {
