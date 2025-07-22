@@ -25,7 +25,6 @@ class EventParticipant extends Model
 
     protected $casts = [
         'password' => 'hashed',
-        'created_at' => 'datetime',
     ];
 
     public function event()
@@ -35,7 +34,7 @@ class EventParticipant extends Model
 
     public function availableDatetimes()
     {
-        return $this->hasMany(AvailableDatetime::class, 'participant_id');
+        return $this->hasMany(ParticipantAvailability::class, 'participant_id');
     }
 
     public function checkPassword($password): bool

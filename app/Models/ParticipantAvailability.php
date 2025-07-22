@@ -5,11 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AvailableDatetime extends Model
+class ParticipantAvailability extends Model
 {
     use HasFactory;
-
-    protected $table = 'participant_availabilities';
 
     protected $fillable = [
         'event_id',
@@ -46,7 +44,7 @@ class AvailableDatetime extends Model
             ->where('end_time', '<=', $endTime);
     }
 
-    public function isOverlapping(AvailableDatetime $other): bool
+    public function isOverlapping(ParticipantAvailability $other): bool
     {
         return $this->date->eq($other->date) &&
                $this->start_time < $other->end_time &&

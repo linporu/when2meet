@@ -1,15 +1,15 @@
 <?php
 
-use App\Models\AvailableDatetime;
 use App\Models\Event;
-use App\Models\EventDatetime;
 use App\Models\EventParticipant;
+use App\Models\EventTimeSlot;
+use App\Models\ParticipantAvailability;
 
 describe('Model Relationships', function () {
     describe('Event Relationships', function () {
         it('has many event datetimes', function () {
             $event = Event::factory()->create();
-            $eventDatetime = EventDatetime::factory()->forEvent($event)->create();
+            $eventDatetime = EventTimeSlot::factory()->forEvent($event)->create();
 
             expect($event->eventDatetimes)->toHaveCount(1);
             expect($event->eventDatetimes->first()->id)->toBe($eventDatetime->id);
@@ -26,7 +26,7 @@ describe('Model Relationships', function () {
         it('has many available datetimes through participants', function () {
             $event = Event::factory()->create();
             $participant = EventParticipant::factory()->forEvent($event)->create();
-            $availableDatetime = AvailableDatetime::factory()->forParticipant($participant)->create();
+            $availableDatetime = ParticipantAvailability::factory()->forParticipant($participant)->create();
 
             expect($event->availableDatetimes)->toHaveCount(1);
             expect($event->availableDatetimes->first()->id)->toBe($availableDatetime->id);
@@ -36,7 +36,7 @@ describe('Model Relationships', function () {
     describe('EventDatetime Relationships', function () {
         it('belongs to an event', function () {
             $event = Event::factory()->create();
-            $eventDatetime = EventDatetime::factory()->forEvent($event)->create();
+            $eventDatetime = EventTimeSlot::factory()->forEvent($event)->create();
 
             expect($eventDatetime->event->id)->toBe($event->id);
         });
@@ -52,7 +52,7 @@ describe('Model Relationships', function () {
 
         it('has many available datetimes', function () {
             $participant = EventParticipant::factory()->create();
-            $availableDatetime = AvailableDatetime::factory()->forParticipant($participant)->create();
+            $availableDatetime = ParticipantAvailability::factory()->forParticipant($participant)->create();
 
             expect($participant->availableDatetimes)->toHaveCount(1);
             expect($participant->availableDatetimes->first()->id)->toBe($availableDatetime->id);
@@ -63,14 +63,14 @@ describe('Model Relationships', function () {
         it('belongs to an event', function () {
             $event = Event::factory()->create();
             $participant = EventParticipant::factory()->forEvent($event)->create();
-            $availableDatetime = AvailableDatetime::factory()->forParticipant($participant)->create();
+            $availableDatetime = ParticipantAvailability::factory()->forParticipant($participant)->create();
 
             expect($availableDatetime->event->id)->toBe($event->id);
         });
 
         it('belongs to a participant', function () {
             $participant = EventParticipant::factory()->create();
-            $availableDatetime = AvailableDatetime::factory()->forParticipant($participant)->create();
+            $availableDatetime = ParticipantAvailability::factory()->forParticipant($participant)->create();
 
             expect($availableDatetime->participant->id)->toBe($participant->id);
         });
@@ -82,8 +82,8 @@ describe('Model Relationships', function () {
             $participant1 = EventParticipant::factory()->forEvent($event)->withName('John')->create();
             $participant2 = EventParticipant::factory()->forEvent($event)->withName('Jane')->create();
 
-            $availableTime1 = AvailableDatetime::factory()->forParticipant($participant1)->create();
-            $availableTime2 = AvailableDatetime::factory()->forParticipant($participant2)->create();
+            $availableTime1 = ParticipantAvailability::factory()->forParticipant($participant1)->create();
+            $availableTime2 = ParticipantAvailability::factory()->forParticipant($participant2)->create();
 
             expect($event->participants)->toHaveCount(2);
             expect($event->availableDatetimes)->toHaveCount(2);
@@ -95,7 +95,7 @@ describe('Model Relationships', function () {
         it('maintains referential integrity through relationships', function () {
             $event = Event::factory()->create();
             $participant = EventParticipant::factory()->forEvent($event)->create();
-            $availableDatetime = AvailableDatetime::factory()->forParticipant($participant)->create();
+            $availableDatetime = ParticipantAvailability::factory()->forParticipant($participant)->create();
 
             // All foreign keys should be consistent
             expect($availableDatetime->event_id)->toBe($event->id);

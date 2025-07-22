@@ -23,7 +23,8 @@
       "Bash(mkdir:*)",
       "Bash(brew services:*)",
       "WebFetch(domain:github.com)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(composer test:*)"
     ],
     "deny": []
   }

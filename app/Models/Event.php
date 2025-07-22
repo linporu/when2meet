@@ -42,7 +42,7 @@ class Event extends Model
 
     public function eventDatetimes()
     {
-        return $this->hasMany(EventDatetime::class);
+        return $this->hasMany(EventTimeSlot::class);
     }
 
     public function participants()
@@ -52,7 +52,7 @@ class Event extends Model
 
     public function availableDatetimes()
     {
-        return $this->hasMany(AvailableDatetime::class);
+        return $this->hasMany(ParticipantAvailability::class);
     }
 
     public function getRouteKeyName()

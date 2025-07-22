@@ -95,26 +95,26 @@ describe('Model Constraints', function () {
 
         it('cascades deletion from EventParticipant to AvailableDatetime', function () {
             $participant = EventParticipant::factory()->create();
-            $availableDatetime = \App\Models\AvailableDatetime::factory()->forParticipant($participant)->create();
+            $availableDatetime = \App\Models\ParticipantAvailability::factory()->forParticipant($participant)->create();
 
-            expect(\App\Models\AvailableDatetime::count())->toBe(1);
+            expect(\App\Models\ParticipantAvailability::count())->toBe(1);
 
             $participant->delete();
 
-            expect(\App\Models\AvailableDatetime::count())->toBe(0);
+            expect(\App\Models\ParticipantAvailability::count())->toBe(0);
         });
 
         it('cascades deletion from Event through participants to AvailableDatetime', function () {
             $event = Event::factory()->create();
             $participant = EventParticipant::factory()->forEvent($event)->create();
-            $availableDatetime = \App\Models\AvailableDatetime::factory()->forParticipant($participant)->create();
+            $availableDatetime = \App\Models\ParticipantAvailability::factory()->forParticipant($participant)->create();
 
-            expect(\App\Models\AvailableDatetime::count())->toBe(1);
+            expect(\App\Models\ParticipantAvailability::count())->toBe(1);
             expect(EventParticipant::count())->toBe(1);
 
             $event->delete();
 
-            expect(\App\Models\AvailableDatetime::count())->toBe(0);
+            expect(\App\Models\ParticipantAvailability::count())->toBe(0);
             expect(EventParticipant::count())->toBe(0);
         });
     });
@@ -123,7 +123,7 @@ describe('Model Constraints', function () {
         it('maintains referential integrity across all models', function () {
             $event = Event::factory()->create();
             $participant = EventParticipant::factory()->forEvent($event)->create();
-            $availableDatetime = \App\Models\AvailableDatetime::factory()->forParticipant($participant)->create();
+            $availableDatetime = \App\Models\ParticipantAvailability::factory()->forParticipant($participant)->create();
 
             expect($availableDatetime->event_id)->toBe($event->id);
             expect($availableDatetime->participant_id)->toBe($participant->id);
