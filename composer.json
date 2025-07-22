@@ -63,21 +63,21 @@
             "@php artisan test --quiet"
         ],
         "fix": "./vendor/bin/pint --quiet",
-        "check": "./vendor/bin/pint --test --quiet",
-        "check-verbose": "./vendor/bin/pint --test",
-        "stan": "phpstan analyse --no-progress --quiet --memory-limit=256M",
-        "stan-verbose": "phpstan analyse --memory-limit=256M",
-        "quality": [
-            "@check",
-            "@stan"
+        "lint": [
+            "./vendor/bin/pint --test --quiet",
+            "phpstan analyse --no-progress --quiet --memory-limit=256M"
         ],
-        "quality-strict": [
-            "@check-verbose",
-            "@stan-verbose"
+        "lint-verbose": [
+            "./vendor/bin/pint --test",
+            "phpstan analyse --memory-limit=256M"
+        ],
+        "code": [
+            "@fix",
+            "@lint"
         ],
         "ci": [
             "@test",
-            "@quality"
+            "@lint"
         ]
     },
     "extra": {

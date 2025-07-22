@@ -107,21 +107,21 @@ parameters:
 {
     "scripts": {
         "fix": "./vendor/bin/pint --quiet",
-        "check": "./vendor/bin/pint --test --quiet",
-        "check-verbose": "./vendor/bin/pint --test",
-        "stan": "phpstan analyse --no-progress --quiet --memory-limit=256M",
-        "stan-verbose": "phpstan analyse --memory-limit=256M",
-        "quality": [
-            "@check",
-            "@stan"
+        "lint": [
+            "./vendor/bin/pint --test --quiet",
+            "phpstan analyse --no-progress --quiet --memory-limit=256M"
         ],
-        "quality-strict": [
-            "@check-verbose",
-            "@stan-verbose"
+        "lint-verbose": [
+            "./vendor/bin/pint --test",
+            "phpstan analyse --memory-limit=256M"
+        ],
+        "code": [
+            "@fix",
+            "phpstan analyse --no-progress --quiet --memory-limit=256M"
         ],
         "ci": [
             "@test",
-            "@quality"
+            "@lint"
         ]
     }
 }
@@ -173,36 +173,26 @@ composer run quality
 
 ## 📋 日常使用
 
-### 開發階段指令
+### 核心指令
 
 ```bash
-# 自動修復格式問題（靜默模式）
+# 修復格式問題
 composer run fix
 
-# 檢查格式問題但不自動修復
-composer run check
+# 檢查格式 + 靜態分析（靜默模式，適合 CI）
+composer run lint
 
-# 檢查格式問題並顯示詳細資訊
-composer run check-verbose
+# 檢查格式 + 靜態分析（詳細模式，適合除錯）
+composer run lint-verbose
 
-# 執行靜態分析（靜默模式）
-composer run stan
+# 開發主力指令：修復格式 + 靜態分析
+composer run code
 
-# 執行靜態分析並顯示詳細資訊
-composer run stan-verbose
-```
-
-### CI/CD 指令
-
-```bash
-# 完整品質檢查（適合 CI）
-composer run quality
-
-# 詳細品質檢查（適合開發除錯）
-composer run quality-strict
-
-# 包含測試的完整 CI 流程
+# 完整 CI 流程：測試 + 檢查
 composer run ci
+
+# 只執行測試
+composer run test
 ```
 
 ## 🔧 故障排除
@@ -284,19 +274,25 @@ public function participants(): HasMany
 
 ## 🎯 最佳實踐
 
-### 1. 開發工作流
+### 1. 簡化工作流
+
+**推薦的 3 步驟流程**：
 
 ```bash
-# 開始開發前
-composer run quality
+# 1. 開發過程中（主力指令）
+composer run code
 
-# 完成功能後
-composer run fix
-composer run quality
-
-# 提交前
+# 2. 提交前完整檢查
 composer run ci
+
+# 3. 遇到錯誤時查看詳情
+composer run lint-verbose
 ```
+
+**步驟說明**：
+- 📝 `code` - 開發中主要使用，自動修復格式 + 靜態檢查
+- ✅ `ci` - 提交前檢驗，模擬 CI 環境（不修改程式碼）
+- 🔍 `lint-verbose` - 遇到問題時的詳細診斷工具
 
 ### 2. Git Hooks 整合
 
@@ -304,7 +300,12 @@ composer run ci
 
 ```bash
 #!/bin/sh
-composer run quality
+# 使用 CI 指令確保程式碼品質，不自動修改
+composer run ci
+if [ $? -ne 0 ]; then
+  echo "❌ Code quality check failed. Run 'composer run code' to fix issues."
+  exit 1
+fi
 ```
 
 ### 3. IDE 整合
@@ -346,6 +347,24 @@ jobs:
       - run: composer run ci
 ```
 
+## 🔄 簡化工作流程
+
+### 指令用途對比
+
+| 情境 | 指令 | 說明 |
+|------|------|------|
+| **開發中** | `composer run code` | 修復格式 + 靜態分析 |
+| **提交前** | `composer run ci` | 測試 + 檢查（不修改程式碼）|
+| **除錯時** | `composer run lint-verbose` | 詳細錯誤信息 |
+| **快速修復** | `composer run fix` | 只修復格式 |
+| **快速檢查** | `composer run lint` | 只檢查品質 |
+| **只測試** | `composer run test` | 只執行測試 |
+
+### 🎯 核心理念
+- **簡化**：從 10+ 個指令精簡為 6 個
+- **直觀**：`code` = 開發，`ci` = 提交/部署，`lint-verbose` = 除錯
+- **安全**：CI 環境不修改程式碼
+
 ## 🌟 Laravel Pint 優勢
 
 ### 相比 PHP CS Fixer 的優勢
@@ -362,8 +381,19 @@ jobs:
 | 檢查格式 | `./vendor/bin/pint --test` | `./vendor/bin/php-cs-fixer fix --dry-run` |
 | 指定檔案 | `./vendor/bin/pint app/Models` | `./vendor/bin/php-cs-fixer fix app/Models` |
 
+### 🚀 指令簡化成果
+
+| 舊版本 (10+ 指令) | 新版本 (6 指令) | 用途 |
+|-------------------|----------------|------|
+| `fix`, `check*`, `stan*` | **`fix`** | 修復格式 |
+| `quality*`, `dev-quality` | **`lint`** + **`lint-verbose`** | 檢查品質 |
+| `dev-quality` | **`code`** | 開發主力 |
+| `ci`, `dev-ci` | **`ci`** | 提交檢查 |
+| - | **`test`** | 只測試 |
+
 ## 📝 版本歷史
 
+- **v3.0**: 簡化指令結構（從 10+ 指令精簡為 6 個）
 - **v2.0**: 改用 Laravel Pint，簡化配置
 - **v1.0**: 初始版本，使用 PHP CS Fixer
 - 支援 PHP 8.2+ 和 Laravel 12+
@@ -372,4 +402,4 @@ jobs:
 
 ---
 
-💡 **提示**：這個配置使用 Laravel 官方工具 Laravel Pint，已在實際專案中驗證，提供更簡潔的配置和更好的 Laravel 整合體驗。
+💡 **提示**：這個 v3.0 配置使用 Laravel 官方工具 Laravel Pint，並精簡工作流程為 3 個核心步驟：`code` → `ci` → `lint-verbose`，已在實際專案中驗證。
