@@ -60,7 +60,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php artisan test --quiet"
+            "@php artisan test --compact"
         ],
         "fix": "./vendor/bin/pint --quiet",
         "lint": [
@@ -77,8 +77,8 @@
         ],
         "ci": [
             "@php artisan config:clear --ansi",
-            "./vendor/bin/pest",
-            "@lint"
+            "@php artisan test",
+            "@lint-verbose"
         ]
     },
     "extra": {
