@@ -43,11 +43,4 @@ class ParticipantAvailability extends Model
         return $query->where('start_time', '>=', $startTime)
             ->where('end_time', '<=', $endTime);
     }
-
-    public function isOverlapping(ParticipantAvailability $other): bool
-    {
-        return $this->date->eq($other->date) &&
-               $this->start_time < $other->end_time &&
-               $this->end_time > $other->start_time;
-    }
 }

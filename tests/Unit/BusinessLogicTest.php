@@ -58,64 +58,6 @@ describe('Business Logic and Edge Cases', function () {
             expect($filtered->first()->id)->toBe($middle->id);
         });
 
-        it('can detect overlapping time slots', function () {
-            $event = Event::factory()->create();
-            $participant = EventParticipant::factory()->forEvent($event)->create();
-
-            $slot1 = ParticipantAvailability::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('14:00:00', '16:00:00')
-                ->create();
-
-            $slot2 = ParticipantAvailability::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('15:00:00', '17:00:00')
-                ->create();
-
-            expect($slot1->isOverlapping($slot2))->toBeTrue();
-            expect($slot2->isOverlapping($slot1))->toBeTrue();
-        });
-
-        it('detects non-overlapping time slots', function () {
-            $event = Event::factory()->create();
-            $participant = EventParticipant::factory()->forEvent($event)->create();
-
-            $slot1 = ParticipantAvailability::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('14:00:00', '16:00:00')
-                ->create();
-
-            $slot2 = ParticipantAvailability::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('17:00:00', '19:00:00')
-                ->create();
-
-            expect($slot1->isOverlapping($slot2))->toBeFalse();
-            expect($slot2->isOverlapping($slot1))->toBeFalse();
-        });
-
-        it('detects overlapping on different dates returns false', function () {
-            $event = Event::factory()->create();
-            $participant = EventParticipant::factory()->forEvent($event)->create();
-
-            $slot1 = ParticipantAvailability::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('14:00:00', '16:00:00')
-                ->create();
-
-            $slot2 = ParticipantAvailability::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-16')
-                ->timeRange('15:00:00', '17:00:00')
-                ->create();
-
-            expect($slot1->isOverlapping($slot2))->toBeFalse();
-        });
     });
 
     describe('Edge Cases', function () {
