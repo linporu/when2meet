@@ -3,12 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Event;
-use App\Models\EventDatetime;
+use App\Models\EventTimeSlot;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class EventDatetimeFactory extends Factory
+class EventTimeSlotFactory extends Factory
 {
-    protected $model = EventDatetime::class;
+    protected $model = EventTimeSlot::class;
 
     public function definition(): array
     {

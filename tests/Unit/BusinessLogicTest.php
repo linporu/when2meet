@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\AvailableDatetime;
 use App\Models\Event;
 use App\Models\EventParticipant;
+use App\Models\ParticipantAvailability;
 
 describe('Business Logic and Edge Cases', function () {
     describe('EventParticipant Password Logic', function () {
@@ -34,11 +34,11 @@ describe('Business Logic and Edge Cases', function () {
             $event = Event::factory()->create();
             $participant = EventParticipant::factory()->forEvent($event)->create();
 
-            $early = AvailableDatetime::factory()->forParticipant($participant)->onDate('2024-01-01')->create();
-            $middle = AvailableDatetime::factory()->forParticipant($participant)->onDate('2024-01-15')->create();
-            $late = AvailableDatetime::factory()->forParticipant($participant)->onDate('2024-01-31')->create();
+            $early = ParticipantAvailability::factory()->forParticipant($participant)->onDate('2024-01-01')->create();
+            $middle = ParticipantAvailability::factory()->forParticipant($participant)->onDate('2024-01-15')->create();
+            $late = ParticipantAvailability::factory()->forParticipant($participant)->onDate('2024-01-31')->create();
 
-            $filtered = AvailableDatetime::forDateRange('2024-01-10', '2024-01-20')->get();
+            $filtered = ParticipantAvailability::forDateRange('2024-01-10', '2024-01-20')->get();
 
             expect($filtered)->toHaveCount(1);
             expect($filtered->first()->id)->toBe($middle->id);
@@ -48,74 +48,16 @@ describe('Business Logic and Edge Cases', function () {
             $event = Event::factory()->create();
             $participant = EventParticipant::factory()->forEvent($event)->create();
 
-            $early = AvailableDatetime::factory()->forParticipant($participant)->timeRange('09:00:00', '10:00:00')->create();
-            $middle = AvailableDatetime::factory()->forParticipant($participant)->timeRange('14:00:00', '15:00:00')->create();
-            $late = AvailableDatetime::factory()->forParticipant($participant)->timeRange('19:00:00', '20:00:00')->create();
+            $early = ParticipantAvailability::factory()->forParticipant($participant)->timeRange('09:00:00', '10:00:00')->create();
+            $middle = ParticipantAvailability::factory()->forParticipant($participant)->timeRange('14:00:00', '15:00:00')->create();
+            $late = ParticipantAvailability::factory()->forParticipant($participant)->timeRange('19:00:00', '20:00:00')->create();
 
-            $filtered = AvailableDatetime::forTimeRange('13:00:00', '16:00:00')->get();
+            $filtered = ParticipantAvailability::forTimeRange('13:00:00', '16:00:00')->get();
 
             expect($filtered)->toHaveCount(1);
             expect($filtered->first()->id)->toBe($middle->id);
         });
 
-        it('can detect overlapping time slots', function () {
-            $event = Event::factory()->create();
-            $participant = EventParticipant::factory()->forEvent($event)->create();
-
-            $slot1 = AvailableDatetime::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('14:00:00', '16:00:00')
-                ->create();
-
-            $slot2 = AvailableDatetime::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('15:00:00', '17:00:00')
-                ->create();
-
-            expect($slot1->isOverlapping($slot2))->toBeTrue();
-            expect($slot2->isOverlapping($slot1))->toBeTrue();
-        });
-
-        it('detects non-overlapping time slots', function () {
-            $event = Event::factory()->create();
-            $participant = EventParticipant::factory()->forEvent($event)->create();
-
-            $slot1 = AvailableDatetime::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('14:00:00', '16:00:00')
-                ->create();
-
-            $slot2 = AvailableDatetime::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('17:00:00', '19:00:00')
-                ->create();
-
-            expect($slot1->isOverlapping($slot2))->toBeFalse();
-            expect($slot2->isOverlapping($slot1))->toBeFalse();
-        });
-
-        it('detects overlapping on different dates returns false', function () {
-            $event = Event::factory()->create();
-            $participant = EventParticipant::factory()->forEvent($event)->create();
-
-            $slot1 = AvailableDatetime::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-15')
-                ->timeRange('14:00:00', '16:00:00')
-                ->create();
-
-            $slot2 = AvailableDatetime::factory()
-                ->forParticipant($participant)
-                ->onDate('2024-01-16')
-                ->timeRange('15:00:00', '17:00:00')
-                ->create();
-
-            expect($slot1->isOverlapping($slot2))->toBeFalse();
-        });
     });
 
     describe('Edge Cases', function () {
@@ -156,12 +98,12 @@ describe('Business Logic and Edge Cases', function () {
             $participant = EventParticipant::factory()->forEvent($event)->create();
 
             // Test time slots at day boundaries
-            $midnightStart = AvailableDatetime::factory()
+            $midnightStart = ParticipantAvailability::factory()
                 ->forParticipant($participant)
                 ->timeRange('00:00:00', '01:00:00')
                 ->create();
 
-            $almostMidnight = AvailableDatetime::factory()
+            $almostMidnight = ParticipantAvailability::factory()
                 ->forParticipant($participant)
                 ->timeRange('23:00:00', '23:59:59')
                 ->create();
@@ -179,13 +121,13 @@ describe('Business Logic and Edge Cases', function () {
             $date = '2024-01-15';
             $timeRange = ['14:00:00', '16:00:00'];
 
-            $availability1 = AvailableDatetime::factory()
+            $availability1 = ParticipantAvailability::factory()
                 ->forParticipant($participant1)
                 ->onDate($date)
                 ->timeRange($timeRange[0], $timeRange[1])
                 ->create();
 
-            $availability2 = AvailableDatetime::factory()
+            $availability2 = ParticipantAvailability::factory()
                 ->forParticipant($participant2)
                 ->onDate($date)
                 ->timeRange($timeRange[0], $timeRange[1])

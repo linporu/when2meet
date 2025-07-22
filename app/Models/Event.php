@@ -10,6 +10,8 @@ class Event extends Model
 {
     use HasFactory;
 
+    private const HASH_LENGTH = 8;
+
     protected $fillable = [
         'name',
         'hash',
@@ -34,7 +36,7 @@ class Event extends Model
     public static function generateUniqueHash(): string
     {
         do {
-            $hash = Str::random(8);
+            $hash = Str::random(self::HASH_LENGTH);
         } while (static::where('hash', $hash)->exists());
 
         return $hash;
@@ -42,7 +44,7 @@ class Event extends Model
 
     public function eventDatetimes()
     {
-        return $this->hasMany(EventDatetime::class);
+        return $this->hasMany(EventTimeSlot::class);
     }
 
     public function participants()
@@ -52,7 +54,7 @@ class Event extends Model
 
     public function availableDatetimes()
     {
-        return $this->hasMany(AvailableDatetime::class);
+        return $this->hasMany(ParticipantAvailability::class);
     }
 
     public function getRouteKeyName()

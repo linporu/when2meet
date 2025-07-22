@@ -2,14 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\AvailableDatetime;
 use App\Models\Event;
 use App\Models\EventParticipant;
+use App\Models\ParticipantAvailability;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class AvailableDatetimeFactory extends Factory
+class ParticipantAvailabilityFactory extends Factory
 {
-    protected $model = AvailableDatetime::class;
+    protected $model = ParticipantAvailability::class;
 
     public function definition(): array
     {

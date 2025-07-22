@@ -5,11 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class EventDatetime extends Model
+class EventTimeSlot extends Model
 {
     use HasFactory;
-
-    protected $table = 'event_datetime';
 
     public $timestamps = false;
 
@@ -22,7 +20,6 @@ class EventDatetime extends Model
 
     protected $casts = [
         'date' => 'date',
-        'created_at' => 'datetime',
     ];
 
     public function event()
@@ -32,7 +29,7 @@ class EventDatetime extends Model
 
     public function availableDatetimes()
     {
-        return $this->hasMany(AvailableDatetime::class, 'event_id', 'event_id')
+        return $this->hasMany(ParticipantAvailability::class, 'event_id', 'event_id')
             ->where('date', $this->date)
             ->where('start_time', '>=', $this->start_time)
             ->where('end_time', '<=', $this->end_time);
