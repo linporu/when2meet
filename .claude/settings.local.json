@@ -20,7 +20,8 @@
       "WebFetch(domain:laravel.com)",
       "Bash(node:*)",
       "Bash(npm:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(brew services:*)"
     ],
     "deny": []
   }
