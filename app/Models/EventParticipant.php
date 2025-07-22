@@ -11,7 +11,6 @@ class EventParticipant extends Model
 
     protected $table = 'event_participants';
 
-    public $timestamps = false;
 
     protected $fillable = [
         'name',
