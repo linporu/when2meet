@@ -77,8 +77,8 @@
         ],
         "ci": [
             "@php artisan config:clear --ansi",
-            "@php artisan test",
-            "@lint-verbose"
+            "./vendor/bin/pest",
+            "@lint"
         ]
     },
     "extra": {
