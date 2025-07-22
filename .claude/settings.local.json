@@ -16,7 +16,11 @@
       "Bash(composer install:*)",
       "Bash(composer quality-strict:*)",
       "Bash(find:*)",
-      "Bash(./vendor/bin/pint:*)"
+      "Bash(./vendor/bin/pint:*)",
+      "WebFetch(domain:laravel.com)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": []
   }
