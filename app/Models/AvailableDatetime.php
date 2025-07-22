@@ -9,7 +9,7 @@ class AvailableDatetime extends Model
 {
     use HasFactory;
 
-    protected $table = 'available_datetime';
+    protected $table = 'participant_availabilities';
 
     protected $fillable = [
         'event_id',

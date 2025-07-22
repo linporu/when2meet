@@ -9,7 +9,7 @@ class EventDatetime extends Model
 {
     use HasFactory;
 
-    protected $table = 'event_datetime';
+    protected $table = 'event_time_slots';
 
     public $timestamps = false;
 
