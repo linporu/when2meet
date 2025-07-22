@@ -41,6 +41,22 @@ php artisan make:test EventTest --unit
 3. **Refactor**: Improve code quality
 4. **Verify**: `composer run test && composer run code`
 
+### Rule 4: Migration Immutability
+
+**ABSOLUTE PROHIBITION**: 
+
+- **NEVER** modify existing migration files once they exist
+- **ALWAYS** create new migrations for schema changes
+- **NEVER** run `php artisan migrate:fresh` or `php artisan migrate:reset` without explicit permission
+
+### Rule 5: Migration Approval
+
+**MANDATORY**: ALL migration commands require explicit approval:
+
+- `php artisan migrate` - **MUST ask for permission first**
+- `php artisan migrate:rollback` - **MUST ask for permission first** 
+- `php artisan migrate:fresh` - **ABSOLUTELY FORBIDDEN without explicit permission**
+
 ## Project Context
 
 Read @docs/PRD.md
@@ -162,6 +178,8 @@ php artisan migrate           # Run migrations
 -   Embedding CSS/JS in Blade templates
 -   Skipping tests before implementation
 -   Ignoring `composer run code` failures
+-   **Modifying existing migration files**
+-   **Running migration commands without approval**
 
 ### Failure Recovery
 
