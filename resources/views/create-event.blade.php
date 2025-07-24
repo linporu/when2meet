@@ -1,196 +1,69 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace("_", "-", app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Create New Event - When2Meet</title>
-        @vite(["resources/css/app.css", "resources/js/app.js"])
-        @vite(["resources/js/pages/events.js"])
-    </head>
+<x-layout title="Create New Event - When2Meet" assets="events">
+    <x-card class="mx-auto max-w-2xl">
+        <h1 class="mb-8 text-center text-3xl font-bold text-gray-900">
+            Create New Event
+        </h1>
 
-    <body class="min-h-screen bg-gray-50">
-        <div class="py-12">
-            <div class="mx-auto max-w-2xl">
-                <div class="rounded-lg bg-white p-8 shadow-md">
-                    <h1
-                        class="mb-8 text-center text-3xl font-bold text-gray-900"
-                    >
-                        Create New Event
-                    </h1>
+        <x-alert :messages="$errors->all()" />
 
-                    @if ($errors->any())
-                        <div
-                            class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600"
-                        >
-                            <ul class="space-y-1">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+        <form id="event-form" method="POST" action="/">
+            @csrf
 
-                    <form id="event-form" method="POST" action="/">
-                        @csrf
+            <x-forms.input 
+                name="event_name" 
+                label="Event Name" 
+                placeholder="Enter event name" 
+                :required="true"
+            />
 
-                        <div class="mb-6">
-                            <label
-                                for="event_name"
-                                class="mb-2 block text-sm font-medium text-gray-700"
-                            >
-                                Event Name
-                                <span class="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                id="event_name"
-                                name="event_name"
-                                class="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                value="{{ old("event_name") }}"
-                                placeholder="Enter event name"
-                                required
-                            />
-                        </div>
+            <x-forms.input 
+                name="date" 
+                type="date" 
+                label="Date" 
+                :required="true"
+            />
 
-                        <div class="mb-6">
-                            <label
-                                for="date"
-                                class="mb-2 block text-sm font-medium text-gray-700"
-                            >
-                                Date
-                                <span class="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="date"
-                                id="date"
-                                name="date"
-                                class="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                value="{{ old("date") }}"
-                                required
-                            />
-                        </div>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <x-forms.input 
+                    name="start_time" 
+                    type="time" 
+                    label="Start Time" 
+                    value="09:00"
+                    :required="true"
+                />
 
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div class="mb-6">
-                                <label
-                                    for="start_time"
-                                    class="mb-2 block text-sm font-medium text-gray-700"
-                                >
-                                    Start Time
-                                    <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="time"
-                                    id="start_time"
-                                    name="start_time"
-                                    class="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                    value="{{ old("start_time", "09:00") }}"
-                                    required
-                                />
-                            </div>
-
-                            <div class="mb-6">
-                                <label
-                                    for="end_time"
-                                    class="mb-2 block text-sm font-medium text-gray-700"
-                                >
-                                    End Time
-                                    <span class="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="time"
-                                    id="end_time"
-                                    name="end_time"
-                                    class="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                    value="{{ old("end_time", "17:00") }}"
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div class="mb-6">
-                            <label
-                                for="timezone"
-                                class="mb-2 block text-sm font-medium text-gray-700"
-                            >
-                                Timezone
-                                <span class="text-red-500">*</span>
-                            </label>
-                            <select
-                                id="timezone"
-                                name="timezone"
-                                class="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
-                                required
-                            >
-                                <option value="">Select timezone</option>
-                                <option
-                                    value="Asia/Taipei"
-                                    {{ old("timezone") == "Asia/Taipei" ? "selected" : "" }}
-                                >
-                                    Taipei (UTC+8)
-                                </option>
-                                <option
-                                    value="Asia/Tokyo"
-                                    {{ old("timezone") == "Asia/Tokyo" ? "selected" : "" }}
-                                >
-                                    Tokyo (UTC+9)
-                                </option>
-                                <option
-                                    value="Asia/Shanghai"
-                                    {{ old("timezone") == "Asia/Shanghai" ? "selected" : "" }}
-                                >
-                                    Shanghai (UTC+8)
-                                </option>
-                                <option
-                                    value="Asia/Hong_Kong"
-                                    {{ old("timezone") == "Asia/Hong_Kong" ? "selected" : "" }}
-                                >
-                                    Hong Kong (UTC+8)
-                                </option>
-                                <option
-                                    value="Asia/Singapore"
-                                    {{ old("timezone") == "Asia/Singapore" ? "selected" : "" }}
-                                >
-                                    Singapore (UTC+8)
-                                </option>
-                                <option
-                                    value="UTC"
-                                    {{ old("timezone") == "UTC" ? "selected" : "" }}
-                                >
-                                    UTC (UTC+0)
-                                </option>
-                                <option
-                                    value="America/New_York"
-                                    {{ old("timezone") == "America/New_York" ? "selected" : "" }}
-                                >
-                                    New York (UTC-5)
-                                </option>
-                                <option
-                                    value="America/Los_Angeles"
-                                    {{ old("timezone") == "America/Los_Angeles" ? "selected" : "" }}
-                                >
-                                    Los Angeles (UTC-8)
-                                </option>
-                                <option
-                                    value="Europe/London"
-                                    {{ old("timezone") == "Europe/London" ? "selected" : "" }}
-                                >
-                                    London (UTC+0)
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="mb-6">
-                            <button
-                                type="submit"
-                                class="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors outline-none hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                            >
-                                Create Event
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                <x-forms.input 
+                    name="end_time" 
+                    type="time" 
+                    label="End Time" 
+                    value="17:00"
+                    :required="true"
+                />
             </div>
-        </div>
-    </body>
-</html>
+
+            <x-forms.select 
+                name="timezone" 
+                label="Timezone" 
+                placeholder="Select timezone"
+                :options="[
+                    'Asia/Taipei' => 'Taipei (UTC+8)',
+                    'Asia/Tokyo' => 'Tokyo (UTC+9)',
+                    'Asia/Shanghai' => 'Shanghai (UTC+8)',
+                    'Asia/Hong_Kong' => 'Hong Kong (UTC+8)',
+                    'Asia/Singapore' => 'Singapore (UTC+8)',
+                    'UTC' => 'UTC (UTC+0)',
+                    'America/New_York' => 'New York (UTC-5)',
+                    'America/Los_Angeles' => 'Los Angeles (UTC-8)',
+                    'Europe/London' => 'London (UTC+0)',
+                ]"
+                :required="true"
+            />
+
+            <div class="mb-6">
+                <x-button type="submit" class="w-full">
+                    Create Event
+                </x-button>
+            </div>
+        </form>
+    </x-card>
+</x-layout>

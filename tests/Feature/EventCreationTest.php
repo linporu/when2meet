@@ -9,7 +9,7 @@ test('homepage displays event creation form', function () {
     $response = $this->get('/');
 
     $response->assertStatus(200);
-    $response->assertSee('建立新活動');
+    $response->assertSee('Create New Event');
     $response->assertSee('name="event_name"', false);
     $response->assertSee('name="date"', false);
     $response->assertSee('name="start_time"', false);
@@ -19,7 +19,7 @@ test('homepage displays event creation form', function () {
 
 test('can create event with valid data', function () {
     $eventData = [
-        'event_name' => '測試活動',
+        'event_name' => 'Test Event',
         'date' => '2025-08-01',
         'start_time' => '09:00',
         'end_time' => '17:00',
@@ -31,7 +31,7 @@ test('can create event with valid data', function () {
     expect(Event::count())->toBe(1);
 
     $event = Event::first();
-    expect($event->name)->toBe('測試活動');
+    expect($event->name)->toBe('Test Event');
 
     $response->assertRedirect('/'.$event->hash);
 });
@@ -44,7 +44,7 @@ test('validates required fields', function () {
 
 test('validates date format', function () {
     $response = $this->post('/', [
-        'event_name' => '測試活動',
+        'event_name' => 'Test Event',
         'date' => 'invalid-date',
     ]);
 
