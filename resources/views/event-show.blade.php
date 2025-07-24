@@ -14,7 +14,9 @@
                         <span class="text-gray-900">{{ $timeSlot->date->format('Y-m-d') }}</span>
                     </div>
                     <div class="flex items-center justify-between mt-2">
-                        <span class="font-medium text-gray-700">Time:</span>
+                        <span class="font-medium text-gray-700">
+                            Time (<span class="timezone-label">Loading...</span>):
+                        </span>
                         <span class="text-gray-900 timezone-display" 
                               data-utc-start="{{ $timeSlot->start_time }}" 
                               data-utc-end="{{ $timeSlot->end_time }}">

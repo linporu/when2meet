@@ -146,7 +146,15 @@ function initTimezoneDisplay() {
             const utcStart = element.getAttribute('data-utc-start');
             const utcEnd = element.getAttribute('data-utc-end');
             if (utcStart && utcEnd) {
-                element.innerHTML = `${utcStart.substring(0, 5)} - ${utcEnd.substring(0, 5)} <small class="text-gray-500">(UTC)</small>`;
+                // Update timezone label to show UTC
+                const container = element.closest('.rounded-lg');
+                const timezoneLabel = container?.querySelector('.timezone-label');
+                if (timezoneLabel) {
+                    timezoneLabel.textContent = 'UTC';
+                }
+                
+                // Update time display only (no HTML generation)
+                element.textContent = `${utcStart.substring(0, 5)} - ${utcEnd.substring(0, 5)}`;
             }
         });
     }

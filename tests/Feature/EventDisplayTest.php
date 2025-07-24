@@ -73,6 +73,12 @@ test('event page displays timezone conversion elements', function () {
     // 驗證前端時區轉換的容器元素
     $response->assertSee('class="text-gray-900 timezone-display"', false);
 
-    // 驗證 placeholder 文字
+    // 驗證新的時區標籤結構
+    $response->assertSee('class="timezone-label"', false);
+    $response->assertSee('Time (');
+    $response->assertSee('):');
+
+    // 驗證 placeholder 文字（分別檢查時區和時間的 placeholder）
+    $response->assertSee('Loading...');
     $response->assertSee('Loading time...');
 });

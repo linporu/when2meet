@@ -96,8 +96,15 @@ class TimezoneConverter {
                 const localStart = this.convertUtcToLocal(utcStart);
                 const localEnd = this.convertUtcToLocal(utcEnd);
 
-                // Update the display content
-                element.innerHTML = `${localStart} - ${localEnd} <small class="text-gray-500">(${this.timezoneOffset})</small>`;
+                // Update timezone label (find the timezone-label in the same container)
+                const container = element.closest('.rounded-lg');
+                const timezoneLabel = container?.querySelector('.timezone-label');
+                if (timezoneLabel) {
+                    timezoneLabel.textContent = this.timezoneOffset;
+                }
+
+                // Update time display content only (no HTML generation)
+                element.textContent = `${localStart} - ${localEnd}`;
             }
         });
     }
