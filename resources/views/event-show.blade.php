@@ -24,7 +24,7 @@
                             ):
                         </span>
                         <span
-                            class="timezone-display text-gray-900"
+                            class="text-gray-900 timezone-display"
                             data-utc-start="{{ $timeSlot->start_time }}"
                             data-utc-end="{{ $timeSlot->end_time }}"
                         >

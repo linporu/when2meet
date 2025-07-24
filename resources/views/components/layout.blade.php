@@ -6,7 +6,7 @@
         <title>{{ $title }}</title>
         @vite(["resources/css/app.css", "resources/js/app.js"])
         @if($assets)
-            @vite(["resources/css/pages/{$assets}.css", "resources/js/pages/{$assets}.js"])
+            @vite(["resources/js/pages/{$assets}.js"])
         @endif
     </head>
 
