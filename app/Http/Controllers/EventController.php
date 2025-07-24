@@ -57,4 +57,14 @@ class EventController extends Controller
 
         return redirect('/'.$event->hash);
     }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Event $event)
+    {
+        $event->load('eventDatetimes');
+
+        return view('event-show', compact('event'));
+    }
 }

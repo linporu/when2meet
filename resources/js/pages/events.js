@@ -1,8 +1,12 @@
 // Event Pages JavaScript
+import { TimezoneConverter } from './timezone.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize event form functionality
     initEventForm();
+    
+    // Initialize timezone display functionality
+    initTimezoneDisplay();
 });
 
 function initEventForm() {
@@ -45,10 +49,10 @@ function validateEventName() {
     const value = nameInput.value.trim();
     
     if (value.length < 1) {
-        showFieldError(nameInput, '請輸入活動名稱');
+        showFieldError(nameInput, 'Please enter an event name');
         return false;
     } else if (value.length > 255) {
-        showFieldError(nameInput, '活動名稱不能超過 255 個字符');
+        showFieldError(nameInput, 'Event name cannot exceed 255 characters');
         return false;
     }
     
@@ -62,10 +66,10 @@ function validateDate() {
     const today = new Date().toISOString().split('T')[0];
     
     if (!value) {
-        showFieldError(dateInput, '請選擇日期');
+        showFieldError(dateInput, 'Please select a date');
         return false;
     } else if (value < today) {
-        showFieldError(dateInput, '不能選擇過去的日期');
+        showFieldError(dateInput, 'Cannot select a past date');
         return false;
     }
     
@@ -80,7 +84,7 @@ function validateTimeRange() {
     const endTime = endTimeInput.value;
     
     if (startTime && endTime && startTime >= endTime) {
-        showFieldError(endTimeInput, '結束時間必須晚於開始時間');
+        showFieldError(endTimeInput, 'End time must be later than start time');
         return false;
     }
     
@@ -115,4 +119,43 @@ function clearFieldError(input) {
         errorDiv.remove();
     }
     input.classList.remove('border-red-500');
+}
+
+/**
+ * Initializes timezone display functionality
+ * Handles timezone conversion display on the page
+ */
+function initTimezoneDisplay() {
+    // Check if there are timezone conversion elements on the page
+    const timezoneElements = document.querySelectorAll('.timezone-display');
+    if (timezoneElements.length === 0) return;
+    
+    try {
+        // Create a TimezoneConverter instance
+        const converter = new TimezoneConverter();
+        
+        // Initialize page timezone conversion
+        converter.initializePageTimezone();
+        
+        console.log(`Initialized ${timezoneElements.length} timezone display elements`);
+    } catch (error) {
+        console.error('Timezone display initialization failed:', error);
+        
+        // Fallback: display original UTC time
+        timezoneElements.forEach(element => {
+            const utcStart = element.getAttribute('data-utc-start');
+            const utcEnd = element.getAttribute('data-utc-end');
+            if (utcStart && utcEnd) {
+                // Update timezone label to show UTC
+                const container = element.closest('.rounded-lg');
+                const timezoneLabel = container?.querySelector('.timezone-label');
+                if (timezoneLabel) {
+                    timezoneLabel.textContent = 'UTC';
+                }
+                
+                // Update time display only (no HTML generation)
+                element.textContent = `${utcStart.substring(0, 5)} - ${utcEnd.substring(0, 5)}`;
+            }
+        });
+    }
 }
