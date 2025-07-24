@@ -11,11 +11,15 @@
                 <div class="rounded-lg bg-gray-50 p-4 mb-4">
                     <div class="flex items-center justify-between">
                         <span class="font-medium text-gray-700">Date:</span>
-                        <span class="text-gray-900">{{ $timeSlot->date }}</span>
+                        <span class="text-gray-900">{{ $timeSlot->date->format('Y-m-d') }}</span>
                     </div>
                     <div class="flex items-center justify-between mt-2">
                         <span class="font-medium text-gray-700">Time:</span>
-                        <span class="text-gray-900">{{ substr($timeSlot->start_time, 0, 5) }} - {{ substr($timeSlot->end_time, 0, 5) }}</span>
+                        <span class="text-gray-900 timezone-display" 
+                              data-utc-start="{{ $timeSlot->start_time }}" 
+                              data-utc-end="{{ $timeSlot->end_time }}">
+                            Loading time...
+                        </span>
                     </div>
                 </div>
             @endforeach

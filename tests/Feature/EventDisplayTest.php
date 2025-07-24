@@ -14,8 +14,8 @@ test('can display event page with valid hash', function () {
     EventTimeSlot::factory()->create([
         'event_id' => $event->id,
         'date' => '2025-08-01',
-        'start_time' => '09:00:00',
-        'end_time' => '17:00:00',
+        'start_time' => '01:00:00',  // UTC time (台北時間 09:00 = UTC 01:00)
+        'end_time' => '09:00:00',   // UTC time (台北時間 17:00 = UTC 09:00)
     ]);
 
     $response = $this->get('/'.$event->hash);
@@ -23,8 +23,10 @@ test('can display event page with valid hash', function () {
     $response->assertStatus(200);
     $response->assertSee('Test Meeting');
     $response->assertSee('2025-08-01');
-    $response->assertSee('09:00');
-    $response->assertSee('17:00');
+    $response->assertSee('data-utc-start="01:00:00"', false);
+    $response->assertSee('data-utc-end="09:00:00"', false);
+    $response->assertSee('timezone-display', false);
+    $response->assertSee('Loading time...');
     $response->assertSee('Enter your name');
 });
 
@@ -42,4 +44,35 @@ test('event page contains participant join form', function () {
     $response->assertStatus(200);
     $response->assertSee('name="participant_name"', false);
     $response->assertSee('Join Event');
+});
+
+test('event page displays timezone conversion elements', function () {
+    $event = Event::factory()->create([
+        'name' => 'Timezone Test Event',
+    ]);
+
+    EventTimeSlot::factory()->create([
+        'event_id' => $event->id,
+        'date' => '2025-08-15',
+        'start_time' => '02:30:00',  // UTC time
+        'end_time' => '10:30:00',   // UTC time
+    ]);
+
+    $response = $this->get('/'.$event->hash);
+
+    $response->assertStatus(200);
+
+    // 驗證日期格式正確（不含時間）
+    $response->assertSee('2025-08-15');
+    $response->assertDontSee('00:00:00');
+
+    // 驗證時區轉換所需的 data attributes
+    $response->assertSee('data-utc-start="02:30:00"', false);
+    $response->assertSee('data-utc-end="10:30:00"', false);
+
+    // 驗證前端時區轉換的容器元素
+    $response->assertSee('class="text-gray-900 timezone-display"', false);
+
+    // 驗證 placeholder 文字
+    $response->assertSee('Loading time...');
 });

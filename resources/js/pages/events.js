@@ -1,4 +1,5 @@
 // Event Pages JavaScript
+import '../pages/timezone.js';
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize event form functionality
