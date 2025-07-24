@@ -68,6 +68,7 @@ Read @docs/PRD.md
 -   **Frontend**: Vite + Tailwind CSS v4
 -   **Testing**: Pest PHP framework
 -   **Target**: AWS EC2 deployment
+-   **Language**: English interface
 
 ### Tech Stack & Structure
 

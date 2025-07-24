@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>建立新活動 - When2Meet</title>
+        <title>Create New Event - When2Meet</title>
         @vite(["resources/css/app.css", "resources/js/app.js"])
         @vite(["resources/js/pages/events.js"])
     </head>
@@ -15,7 +15,7 @@
                     <h1
                         class="mb-8 text-center text-3xl font-bold text-gray-900"
                     >
-                        建立新活動
+                        Create New Event
                     </h1>
 
                     @if ($errors->any())
@@ -38,7 +38,7 @@
                                 for="event_name"
                                 class="mb-2 block text-sm font-medium text-gray-700"
                             >
-                                活動名稱
+                                Event Name
                                 <span class="text-red-500">*</span>
                             </label>
                             <input
@@ -47,7 +47,7 @@
                                 name="event_name"
                                 class="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                 value="{{ old("event_name") }}"
-                                placeholder="請輸入活動名稱"
+                                placeholder="Enter event name"
                                 required
                             />
                         </div>
@@ -57,7 +57,7 @@
                                 for="date"
                                 class="mb-2 block text-sm font-medium text-gray-700"
                             >
-                                日期
+                                Date
                                 <span class="text-red-500">*</span>
                             </label>
                             <input
@@ -76,7 +76,7 @@
                                     for="start_time"
                                     class="mb-2 block text-sm font-medium text-gray-700"
                                 >
-                                    開始時間
+                                    Start Time
                                     <span class="text-red-500">*</span>
                                 </label>
                                 <input
@@ -94,7 +94,7 @@
                                     for="end_time"
                                     class="mb-2 block text-sm font-medium text-gray-700"
                                 >
-                                    結束時間
+                                    End Time
                                     <span class="text-red-500">*</span>
                                 </label>
                                 <input
@@ -113,7 +113,7 @@
                                 for="timezone"
                                 class="mb-2 block text-sm font-medium text-gray-700"
                             >
-                                時區
+                                Timezone
                                 <span class="text-red-500">*</span>
                             </label>
                             <select
@@ -122,36 +122,36 @@
                                 class="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                                 required
                             >
-                                <option value="">請選擇時區</option>
+                                <option value="">Select timezone</option>
                                 <option
                                     value="Asia/Taipei"
                                     {{ old("timezone") == "Asia/Taipei" ? "selected" : "" }}
                                 >
-                                    台北 (UTC+8)
+                                    Taipei (UTC+8)
                                 </option>
                                 <option
                                     value="Asia/Tokyo"
                                     {{ old("timezone") == "Asia/Tokyo" ? "selected" : "" }}
                                 >
-                                    東京 (UTC+9)
+                                    Tokyo (UTC+9)
                                 </option>
                                 <option
                                     value="Asia/Shanghai"
                                     {{ old("timezone") == "Asia/Shanghai" ? "selected" : "" }}
                                 >
-                                    上海 (UTC+8)
+                                    Shanghai (UTC+8)
                                 </option>
                                 <option
                                     value="Asia/Hong_Kong"
                                     {{ old("timezone") == "Asia/Hong_Kong" ? "selected" : "" }}
                                 >
-                                    香港 (UTC+8)
+                                    Hong Kong (UTC+8)
                                 </option>
                                 <option
                                     value="Asia/Singapore"
                                     {{ old("timezone") == "Asia/Singapore" ? "selected" : "" }}
                                 >
-                                    新加坡 (UTC+8)
+                                    Singapore (UTC+8)
                                 </option>
                                 <option
                                     value="UTC"
@@ -163,19 +163,19 @@
                                     value="America/New_York"
                                     {{ old("timezone") == "America/New_York" ? "selected" : "" }}
                                 >
-                                    紐約 (UTC-5)
+                                    New York (UTC-5)
                                 </option>
                                 <option
                                     value="America/Los_Angeles"
                                     {{ old("timezone") == "America/Los_Angeles" ? "selected" : "" }}
                                 >
-                                    洛杉磯 (UTC-8)
+                                    Los Angeles (UTC-8)
                                 </option>
                                 <option
                                     value="Europe/London"
                                     {{ old("timezone") == "Europe/London" ? "selected" : "" }}
                                 >
-                                    倫敦 (UTC+0)
+                                    London (UTC+0)
                                 </option>
                             </select>
                         </div>
@@ -185,7 +185,7 @@
                                 type="submit"
                                 class="w-full rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-colors outline-none hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                             >
-                                建立活動
+                                Create Event
                             </button>
                         </div>
                     </form>

@@ -21,17 +21,17 @@ This project is primarily for the developer's own educational purposes. However,
 
 | Feature ID | Feature Name                                      | Description                                                                                                                                                                                                 | Priority (High/Medium/Low) |
 | :--------- | :------------------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------- |
-| F01        | **建立活動 (Create Event)**                       | - 使用者可以在首頁 (`/`) 建立新活動，無需登入。<br>- 可以輸入活動名稱（必填）。<br>- 可以設定活動的日期、開始時間、結束時間和時區。<br>- 成功建立後，產生一個獨一無二的分享連結 (`/{event-hash}`)。         | **High**                   |
-| F02        | **參與活動 (Participate in Event)**               | - 透過分享連結 (`/{event-hash}`) 進入活動頁面。<br>- 參與者需要輸入一個名稱來參與該活動。                                                                                                                   | **High**                   |
-| F03        | **標示有空時間 (Mark Availability)**              | - 在活動頁面上，顯示一個基於活動日期與時間的時間格 (Time Grid)。<br>- 使用者可以透過在時間格上拖拉來選取多個有空的時段。<br>- 再次拖拉已選取的時段可以取消選取。                                            | **High**                   |
-| F04        | **視覺化團隊時間 (Visualize Group Availability)** | - 時間格會即時顯示所有參與者的有空時間重疊狀況。<br>- 使用顏色梯度（例如：從淺到深）來表示每個時段的空閒人數多寡，人越多顏色越深/越綠。<br>- 當滑鼠懸停在某個時段上時，顯示該時段有哪些人有空、哪些人沒空。 | **High**                   |
+| F01        | **Create Event**                                  | - Users can create new events on the homepage (`/`) without login.<br>- Can input event name (required).<br>- Can set event date, start time, end time, and timezone.<br>- After successful creation, generates a unique shareable link (`/{event-hash}`).                    | **High**                   |
+| F02        | **Participate in Event**                          | - Access event page through shareable link (`/{event-hash}`).<br>- Participants need to enter a name to join the event.                                                                                                                                                            | **High**                   |
+| F03        | **Mark Availability**                             | - Display a time grid based on event date and time on the event page.<br>- Users can drag on the time grid to select multiple available time slots.<br>- Dragging on already selected slots will deselect them.                                                               | **High**                   |
+| F04        | **Visualize Group Availability**                  | - Time grid displays real-time overlap of all participants' availability.<br>- Use color gradients (e.g., light to dark) to represent the number of available people per slot - more people means darker/greener color.<br>- Show who's available/unavailable on hover. | **High**                   |
 
 ### Phase 2: User Authentication System (Future Enhancement)
 
 | Feature ID | Feature Name                             | Description                                                                                                                                                                                               | Priority (High/Medium/Low) |
 | :--------- | :--------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------- |
-| F06        | **用戶認證系統 (User Authentication)**   | - 將首頁 (`/`) 改為登入頁面，提供用戶登入和註冊功能。<br>- 登入後導向 `/dashboard` 頁面來建立活動。<br>- 提供登出功能。<br>- 使用 Laravel 內建的認證機制。<br>- 活動頁面 (`/{event-hash}`) 維持公開存取。 | **Future**                 |
-| F07        | **用戶活動管理 (User Event Management)** | - 登入用戶可以查看自己建立的所有活動。<br>- 提供編輯和刪除活動的功能。                                                                                                                                    | **Future**                 |
+| F06        | **User Authentication**                           | - Change homepage (`/`) to login page, providing user login and registration functionality.<br>- After login, redirect to `/dashboard` page to create events.<br>- Provide logout functionality.<br>- Use Laravel's built-in authentication mechanism.<br>- Event pages (`/{event-hash}`) remain publicly accessible. | **Future**                 |
+| F07        | **User Event Management**                         | - Logged-in users can view all events they created.<br>- Provide edit and delete event functionality.                                                                                                                                                                              | **Future**                 |
 
 ## 5. Technical Requirements
 
@@ -56,8 +56,8 @@ This project is primarily for the developer's own educational purposes. However,
 
 ---
 
-**開發注意事項 (Development Notes):**
+**Development Notes:**
 
--   **彈性範圍 (Flexible Scope):** 根據 mentor 的建議，部分功能可以根據開發進度進行簡化。特別是前端互動較複雜的部分（如：F04 的顏色梯度、F03 的拖拉選擇時間），在初期開發階段可以採用較簡單的替代方案（例如：點擊選擇、手動輸入時間），以確保核心後端功能優先完成。
+-   **Flexible Scope:** Based on mentor's suggestions, some features can be simplified according to development progress. Particularly for complex frontend interactions (such as color gradients in F04, drag selection in F03), simpler alternatives can be adopted in early development stages (e.g., click selection, manual time input) to ensure core backend functionality is prioritized.
 
 ---
