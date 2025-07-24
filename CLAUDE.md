@@ -45,17 +45,17 @@ php artisan make:test EventTest --unit
 
 **ABSOLUTE PROHIBITION**:
 
--   **NEVER** modify existing migration files once they exist
--   **ALWAYS** create new migrations for schema changes
--   **NEVER** run `php artisan migrate:fresh` or `php artisan migrate:reset` without explicit permission
+- **NEVER** modify existing migration files once they exist
+- **ALWAYS** create new migrations for schema changes
+- **NEVER** run `php artisan migrate:fresh` or `php artisan migrate:reset` without explicit permission
 
 ### Rule 5: Migration Approval
 
 **MANDATORY**: ALL migration commands require explicit approval:
 
--   `php artisan migrate` - **MUST ask for permission first**
--   `php artisan migrate:rollback` - **MUST ask for permission first**
--   `php artisan migrate:fresh` - **ABSOLUTELY FORBIDDEN without explicit permission**
+- `php artisan migrate` - **MUST ask for permission first**
+- `php artisan migrate:rollback` - **MUST ask for permission first**
+- `php artisan migrate:fresh` - **ABSOLUTELY FORBIDDEN without explicit permission**
 
 ## Project Context
 
@@ -63,12 +63,12 @@ Read @docs/PRD.md
 
 **When2Meet** - Event scheduling with availability grids
 
--   **Framework**: Laravel 12 + Blade templates
--   **Database**: SQLite (local) → MySQL/PostgreSQL (production)
--   **Frontend**: Vite + Tailwind CSS v4
--   **Testing**: Pest PHP framework
--   **Target**: AWS EC2 deployment
--   **Language**: English interface
+- **Framework**: Laravel 12 + Blade templates
+- **Database**: SQLite (local) → MySQL/PostgreSQL (production)
+- **Frontend**: Vite + Tailwind CSS v4
+- **Testing**: Pest PHP framework
+- **Target**: AWS EC2 deployment
+- **Language**: English interface
 
 ### Tech Stack & Structure
 
@@ -168,19 +168,19 @@ php artisan migrate           # Run migrations
 
 ### ✅ Required Checks
 
--   [ ] Generated files using Artisan commands
--   [ ] All tests pass (`composer run test`)
--   [ ] No code quality issues (`composer run code`)
--   [ ] Assets in `resources/` directory (not inline)
--   [ ] Followed TDD Red-Green-Refactor cycle
+- [ ] Generated files using Artisan commands
+- [ ] All tests pass (`composer run test`)
+- [ ] No code quality issues (`composer run code`)
+- [ ] Assets in `resources/` directory (not inline)
+- [ ] Followed TDD Red-Green-Refactor cycle
 
 ### ❌ Prohibited Actions
 
--   Embedding JS in Blade templates
--   Skipping tests before implementation
--   Ignoring `composer run code` failures
--   **Modifying existing migration files**
--   **Running migration commands without approval**
+- Embedding JS in Blade templates
+- Skipping tests before implementation
+- Ignoring `composer run code` failures
+- **Modifying existing migration files**
+- **Running migration commands without approval**
 
 ### Failure Recovery
 
