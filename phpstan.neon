@@ -12,7 +12,6 @@ parameters:
     
     ignoreErrors:
         - '#Undefined variable: \$this#'
-        - '#Call to an undefined method PHPUnit\\Framework\\TestCase::#'
         # Laravel Model dynamic properties and methods in tests
         - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::#'
         - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::#'
