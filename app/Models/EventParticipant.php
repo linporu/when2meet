@@ -28,7 +28,7 @@ class EventParticipant extends Model
         return $this->belongsTo(Event::class);
     }
 
-    public function availableDatetimes()
+    public function participantAvailabilities()
     {
         return $this->hasMany(ParticipantAvailability::class, 'participant_id');
     }

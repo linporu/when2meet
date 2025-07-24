@@ -27,7 +27,7 @@ class EventTimeSlot extends Model
         return $this->belongsTo(Event::class);
     }
 
-    public function availableDatetimes()
+    public function participantAvailabilities()
     {
         return $this->hasMany(ParticipantAvailability::class, 'event_id', 'event_id')
             ->where('date', $this->date)

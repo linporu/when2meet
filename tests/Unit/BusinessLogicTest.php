@@ -65,13 +65,13 @@ describe('Business Logic and Edge Cases', function () {
             $event = Event::factory()->create();
 
             expect($event->participants)->toHaveCount(0);
-            expect($event->availableDatetimes)->toHaveCount(0);
+            expect($event->participantAvailabilities)->toHaveCount(0);
         });
 
         it('handles participant with no available times', function () {
             $participant = EventParticipant::factory()->create();
 
-            expect($participant->availableDatetimes)->toHaveCount(0);
+            expect($participant->participantAvailabilities)->toHaveCount(0);
         });
 
         it('handles minimum and maximum string lengths', function () {

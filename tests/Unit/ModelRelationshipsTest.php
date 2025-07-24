@@ -11,8 +11,8 @@ describe('Model Relationships', function () {
             $event = Event::factory()->create();
             $eventDatetime = EventTimeSlot::factory()->forEvent($event)->create();
 
-            expect($event->eventDatetimes)->toHaveCount(1);
-            expect($event->eventDatetimes->first()->id)->toBe($eventDatetime->id);
+            expect($event->timeSlots)->toHaveCount(1);
+            expect($event->timeSlots->first()->id)->toBe($eventDatetime->id);
         });
 
         it('has many participants', function () {
@@ -28,8 +28,8 @@ describe('Model Relationships', function () {
             $participant = EventParticipant::factory()->forEvent($event)->create();
             $availableDatetime = ParticipantAvailability::factory()->forParticipant($participant)->create();
 
-            expect($event->availableDatetimes)->toHaveCount(1);
-            expect($event->availableDatetimes->first()->id)->toBe($availableDatetime->id);
+            expect($event->participantAvailabilities)->toHaveCount(1);
+            expect($event->participantAvailabilities->first()->id)->toBe($availableDatetime->id);
         });
     });
 
@@ -54,8 +54,8 @@ describe('Model Relationships', function () {
             $participant = EventParticipant::factory()->create();
             $availableDatetime = ParticipantAvailability::factory()->forParticipant($participant)->create();
 
-            expect($participant->availableDatetimes)->toHaveCount(1);
-            expect($participant->availableDatetimes->first()->id)->toBe($availableDatetime->id);
+            expect($participant->participantAvailabilities)->toHaveCount(1);
+            expect($participant->participantAvailabilities->first()->id)->toBe($availableDatetime->id);
         });
     });
 
@@ -86,7 +86,7 @@ describe('Model Relationships', function () {
             $availableTime2 = ParticipantAvailability::factory()->forParticipant($participant2)->create();
 
             expect($event->participants)->toHaveCount(2);
-            expect($event->availableDatetimes)->toHaveCount(2);
+            expect($event->participantAvailabilities)->toHaveCount(2);
 
             $participantNames = $event->participants->pluck('name')->toArray();
             expect($participantNames)->toContain('John', 'Jane');

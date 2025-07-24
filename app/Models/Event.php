@@ -42,7 +42,7 @@ class Event extends Model
         return $hash;
     }
 
-    public function eventDatetimes()
+    public function timeSlots()
     {
         return $this->hasMany(EventTimeSlot::class);
     }
@@ -52,7 +52,7 @@ class Event extends Model
         return $this->hasMany(EventParticipant::class);
     }
 
-    public function availableDatetimes()
+    public function participantAvailabilities()
     {
         return $this->hasMany(ParticipantAvailability::class);
     }

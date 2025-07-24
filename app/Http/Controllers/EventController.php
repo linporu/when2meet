@@ -63,7 +63,7 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        $event->load('eventDatetimes');
+        $event->load('timeSlots');
 
         return view('event-show', compact('event'));
     }
