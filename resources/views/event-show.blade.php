@@ -35,7 +35,7 @@
             @endforeach
         </div>
 
-        {{-- Availability Form --}}
-        <x-availability-form :event="$event" />
+        {{-- Participant Name Form --}}
+        <x-participant-name-form :event="$event" />
     </x-card>
 </x-layout>

@@ -72,6 +72,62 @@ class EventController extends Controller
     }
 
     /**
+     * Handle participant name entry.
+     */
+    public function enterName(Event $event)
+    {
+        $validated = request()->validate([
+            'participant_name' => 'required|string|max:255',
+        ]);
+
+        // Create or find participant
+        $participant = EventParticipant::firstOrCreate(
+            [
+                'event_id' => $event->id,
+                'name' => $validated['participant_name'],
+            ],
+            [
+                'event_id' => $event->id,
+                'name' => $validated['participant_name'],
+            ]
+        );
+
+        return redirect()->route('events.editAvailability', [
+            'event' => $event->hash,
+            'participant' => $participant->id,
+        ]);
+    }
+
+    /**
+     * Show participant availability editing interface.
+     */
+    public function editAvailability(Event $event, EventParticipant $participant)
+    {
+        // Verify participant belongs to this event
+        if ($participant->event_id !== $event->id) {
+            abort(404);
+        }
+
+        $event->load('timeSlots');
+
+        // Load existing availability data for this participant
+        $existingAvailability = $participant->participantAvailabilities()
+            ->get()
+            ->groupBy('date')
+            ->map(function ($availabilities) {
+                return $availabilities->map(function ($availability) {
+                    return [
+                        'start_time' => $availability->start_time,
+                        'end_time' => $availability->end_time,
+                    ];
+                })->toArray();
+            })
+            ->toArray();
+
+        return view('participant-edit', compact('event', 'participant', 'existingAvailability'));
+    }
+
+    /**
      * Handle participant joining an event with availability.
      */
     public function join(JoinEventRequest $request, Event $event)
@@ -107,8 +163,12 @@ class EventController extends Controller
             ]);
         }
 
+        // Find the participant to redirect back to their edit page
         return redirect()
-            ->route('events.show', $event->hash)
-            ->with('success', 'Successfully joined the event and saved your availability!');
+            ->route('events.editAvailability', [
+                'event' => $event->hash,
+                'participant' => $participant->id,
+            ])
+            ->with('success', 'Your availability has been saved successfully!');
     }
 }
