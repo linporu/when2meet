@@ -6,7 +6,7 @@
         Enter your name to participate in this event and mark your availability.
     </p>
 
-    <form method="POST" action="{{ route('events.enterName', $event->hash) }}">
+    <form method="POST" action="{{ route('participants.setName', $event->hash) }}">
         @csrf
 
         {{-- Participant Name Input --}}

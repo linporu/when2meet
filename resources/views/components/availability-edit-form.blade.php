@@ -53,7 +53,7 @@
         <form
             id="availability-form"
             method="POST"
-            action="{{ route("events.editAvailability", [$event->hash, $participant->id]) }}"
+            action="{{ route("participants.availability.edit", [$event->hash, $participant->id]) }}"
         >
             @csrf
 

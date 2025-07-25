@@ -35,6 +35,13 @@
             @endforeach
         </div>
 
+        {{-- Error Message --}}
+        @if (session('error'))
+            <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-600">
+                {{ session('error') }}
+            </div>
+        @endif
+
         {{-- Participant Name Form --}}
         <x-participant-name-form :event="$event" />
     </x-card>

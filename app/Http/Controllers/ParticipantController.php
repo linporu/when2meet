@@ -10,9 +10,9 @@ use Carbon\Carbon;
 class ParticipantController extends Controller
 {
     /**
-     * Handle participant name entry.
+     * Set participant name and redirect to availability editing.
      */
-    public function enterName(Event $event)
+    public function setName(Event $event)
     {
         $validated = request()->validate([
             'participant_name' => 'required|string|max:255',
@@ -30,7 +30,7 @@ class ParticipantController extends Controller
             ]
         );
 
-        return redirect()->route('events.editAvailability', [
+        return redirect()->route('participants.availability.edit', [
             'event' => $event->hash,
             'participant' => $participant->id,
         ]);
@@ -43,7 +43,8 @@ class ParticipantController extends Controller
     {
         // Verify participant belongs to this event
         if ($participant->event_id !== $event->id) {
-            abort(404);
+            return redirect()->route('events.show', $event->hash)
+                ->with('error', 'Invalid participant access. Please enter your name to continue.');
         }
 
         // Handle POST request (save availability)
