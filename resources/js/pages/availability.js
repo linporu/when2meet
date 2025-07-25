@@ -154,7 +154,7 @@ export class AvailabilityForm {
             <div class="time-range-selector mb-3 rounded border border-gray-200 bg-gray-50 p-3" data-index="${index}">
                 <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
                     <div class="flex-1">
-                        <label class="mb-1 block text-sm font-medium text-gray-700">Start Time</label>
+                        <label class="mb-1 block text-sm font-medium text-gray-700">Start Time <span class="text-red-500">*</span></label>
                         <select name="availability[${date}][${index}][start_time]" 
                                 class="time-select start-time w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 data-date="${date}" data-index="${index}">
@@ -166,7 +166,7 @@ export class AvailabilityForm {
                         <span class="text-sm font-medium">to</span>
                     </div>
                     <div class="flex-1">
-                        <label class="mb-1 block text-sm font-medium text-gray-700">End Time</label>
+                        <label class="mb-1 block text-sm font-medium text-gray-700">End Time <span class="text-red-500">*</span></label>
                         <select name="availability[${date}][${index}][end_time]" 
                                 class="time-select end-time w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 data-date="${date}" data-index="${index}">
@@ -246,7 +246,33 @@ export class AvailabilityForm {
         // Clear previous errors
         this.clearTimeRangeError(timeRangeSelector);
 
-        // Validate if both times are selected
+        // Check if both times are empty
+        if (!startTime && !endTime) {
+            this.showTimeRangeError(
+                timeRangeSelector,
+                "Please select both start time and end time",
+            );
+            return false;
+        }
+
+        // Check if only one time is selected
+        if (!startTime && endTime) {
+            this.showTimeRangeError(
+                timeRangeSelector,
+                "Please select start time",
+            );
+            return false;
+        }
+
+        if (startTime && !endTime) {
+            this.showTimeRangeError(
+                timeRangeSelector,
+                "Please select end time",
+            );
+            return false;
+        }
+
+        // Both times are selected, validate time logic
         if (startTime && endTime) {
             if (startTime >= endTime) {
                 this.showTimeRangeError(

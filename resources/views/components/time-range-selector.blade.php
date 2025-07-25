@@ -3,7 +3,7 @@
         {{-- Start Time Select --}}
         <div class="flex-1">
             <label class="mb-1 block text-sm font-medium text-gray-700">
-                Start Time
+                Start Time <span class="text-red-500">*</span>
             </label>
             <select 
                 name="availability[{{ $date }}][{{ $index }}][start_time]"
@@ -28,7 +28,7 @@
         {{-- End Time Select --}}
         <div class="flex-1">
             <label class="mb-1 block text-sm font-medium text-gray-700">
-                End Time
+                End Time <span class="text-red-500">*</span>
             </label>
             <select 
                 name="availability[{{ $date }}][{{ $index }}][end_time]"
