@@ -13,5 +13,4 @@ Route::controller(EventController::class)->group(function () {
 Route::controller(ParticipantController::class)->group(function () {
     Route::post('/{event:hash}/enter-name', 'enterName')->name('events.enterName');
     Route::match(['GET', 'POST'], '/{event:hash}/participant/{participant}/edit', 'editAvailability')->name('events.editAvailability');
-    Route::post('{event:hash}/join', 'join')->name('events.join');
 });

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\JoinEventRequest;
 use App\Models\Event;
 use App\Models\EventParticipant;
 use App\Models\ParticipantAvailability;
@@ -181,63 +180,6 @@ class ParticipantController extends Controller
 
         // Re-render the form with fresh data and success message
         return $this->showEditForm($event, $participant)
-            ->with('success', 'Your availability has been saved successfully!');
-    }
-
-    /**
-     * Handle participant joining an event with availability.
-     */
-    public function join(JoinEventRequest $request, Event $event)
-    {
-        $validated = $request->validated();
-
-        // Create or update participant
-        $participant = EventParticipant::updateOrCreate(
-            [
-                'event_id' => $event->id,
-                'name' => $validated['participant_name'],
-            ],
-            [
-                'event_id' => $event->id,
-                'name' => $validated['participant_name'],
-            ]
-        );
-
-        // Delete existing availability records for this participant
-        ParticipantAvailability::where('participant_id', $participant->id)->delete();
-
-        // Get validated availability data
-        $availabilityData = $request->getValidatedAvailability();
-
-        // Create new availability records
-        foreach ($availabilityData as $availability) {
-            ParticipantAvailability::create([
-                'event_id' => $event->id,
-                'participant_id' => $participant->id,
-                'date' => $availability['date'],
-                'start_time' => $availability['start_time'],
-                'end_time' => $availability['end_time'],
-            ]);
-        }
-
-        // Instead of redirecting, re-render the edit page with fresh data
-        $event->load('timeSlots');
-
-        // Load existing availability data for this participant (fresh from database)
-        $existingAvailability = $participant->participantAvailabilities()
-            ->get()
-            ->groupBy('date')
-            ->map(function ($availabilities) {
-                return $availabilities->map(function ($availability) {
-                    return [
-                        'start_time' => $availability->start_time,
-                        'end_time' => $availability->end_time,
-                    ];
-                })->toArray();
-            })
-            ->toArray();
-
-        return view('participant-edit', compact('event', 'participant', 'existingAvailability'))
             ->with('success', 'Your availability has been saved successfully!');
     }
 }
