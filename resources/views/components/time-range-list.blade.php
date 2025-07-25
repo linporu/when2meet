@@ -1,26 +1,9 @@
 <div class="time-range-list" data-date="{{ $date }}">
-    {{-- Existing Time Ranges --}}
-    <div class="time-ranges-container">
-        @if (count($existingRanges) > 0)
-            @foreach ($existingRanges as $index => $range)
-                <x-time-range-selector 
-                    :date="$date"
-                    :time-options="$timeOptions"
-                    :index="$index"
-                    :start-time="$range['start_time'] ?? ''"
-                    :end-time="$range['end_time'] ?? ''"
-                    :can-delete="count($existingRanges) > 1"
-                />
-            @endforeach
-        @else
-            {{-- Default empty time range --}}
-            <x-time-range-selector 
-                :date="$date"
-                :time-options="$timeOptions"
-                :index="0"
-                :can-delete="false"
-            />
-        @endif
+    {{-- Container for JavaScript-rendered time ranges --}}
+    <div class="time-ranges-container" 
+         data-existing-ranges="{{ json_encode($existingRanges) }}"
+         data-time-options="{{ json_encode($timeOptions) }}">
+        {{-- JavaScript will render all time range selectors here --}}
     </div>
     
     {{-- Add Time Range Button --}}

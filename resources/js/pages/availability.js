@@ -16,8 +16,56 @@ export class AvailabilityForm {
         this.initRemoveTimeRangeButtons();
         this.initTimeRangeValidation();
         this.initFormSubmission();
+        
+        // Render initial time ranges from server data
+        this.renderInitialTimeRanges();
 
         console.log("Availability form initialized");
+    }
+
+    /**
+     * Render initial time ranges from server data
+     */
+    renderInitialTimeRanges() {
+        const timeRangeLists = this.form.querySelectorAll(".time-range-list");
+        
+        timeRangeLists.forEach(timeRangeList => {
+            const container = timeRangeList.querySelector(".time-ranges-container");
+            const date = timeRangeList.dataset.date;
+            
+            // Parse data from container
+            const existingRanges = JSON.parse(container.dataset.existingRanges || "[]");
+            const timeOptions = JSON.parse(container.dataset.timeOptions || "[]");
+            
+            // Clear container
+            container.innerHTML = "";
+            
+            // Render time ranges
+            if (existingRanges.length > 0) {
+                // Render existing ranges
+                existingRanges.forEach((range, index) => {
+                    const timeRangeHTML = this.createTimeRangeSelectorHTML(
+                        date, 
+                        index, 
+                        timeOptions,
+                        range.start_time || "",
+                        range.end_time || ""
+                    );
+                    container.insertAdjacentHTML("beforeend", timeRangeHTML);
+                });
+            } else {
+                // Render default empty time range
+                const timeRangeHTML = this.createTimeRangeSelectorHTML(
+                    date, 
+                    0, 
+                    timeOptions
+                );
+                container.insertAdjacentHTML("beforeend", timeRangeHTML);
+            }
+            
+            // Update remove buttons visibility
+            this.updateRemoveButtonsVisibility(container);
+        });
     }
 
     /**
@@ -99,25 +147,18 @@ export class AvailabilityForm {
         );
         const newIndex = existingRanges.length;
 
-        // Get time options from the first existing selector
-        const firstSelector = existingRanges[0];
-        const startTimeSelect = firstSelector.querySelector(".start-time");
-        const timeOptions = Array.from(startTimeSelect.options).slice(1); // Skip the first empty option
+        // Get time options from container data
+        const timeOptions = JSON.parse(container.dataset.timeOptions || "[]");
 
         // Create new time range selector HTML
         const newTimeRangeHTML = this.createTimeRangeSelectorHTML(
             date,
             newIndex,
-            timeOptions,
+            timeOptions
         );
 
-        // Create a temporary div to hold the HTML
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = newTimeRangeHTML;
-        const newTimeRange = tempDiv.firstElementChild;
-
         // Append to container
-        container.appendChild(newTimeRange);
+        container.insertAdjacentHTML("beforeend", newTimeRangeHTML);
 
         // Update existing ranges to show remove buttons if there are now multiple ranges
         this.updateRemoveButtonsVisibility(container);
@@ -142,11 +183,35 @@ export class AvailabilityForm {
     /**
      * Create HTML for a new time range selector
      */
-    createTimeRangeSelectorHTML(date, index, timeOptions) {
-        const optionsHTML = timeOptions
+    createTimeRangeSelectorHTML(date, index, timeOptions, startTime = "", endTime = "") {
+        // Convert timeOptions object to array format if needed
+        const timeOptionsArray = Array.isArray(timeOptions) 
+            ? timeOptions 
+            : Object.entries(timeOptions).map(([value, text]) => ({ value, text }));
+
+        // Generate options HTML for start time select
+        const startOptionsHTML = timeOptionsArray
             .map(
-                (option) =>
-                    `<option value="${option.value}">${option.textContent}</option>`,
+                (option) => {
+                    // Handle both DOM option elements and processed objects
+                    const value = option.value || option;
+                    const text = option.text || option.textContent || option;
+                    const selected = value === startTime ? "selected" : "";
+                    return `<option value="${value}" ${selected}>${text}</option>`;
+                }
+            )
+            .join("");
+            
+        // Generate options HTML for end time select
+        const endOptionsHTML = timeOptionsArray
+            .map(
+                (option) => {
+                    // Handle both DOM option elements and processed objects
+                    const value = option.value || option;
+                    const text = option.text || option.textContent || option;
+                    const selected = value === endTime ? "selected" : "";
+                    return `<option value="${value}" ${selected}>${text}</option>`;
+                }
             )
             .join("");
 
@@ -159,7 +224,7 @@ export class AvailabilityForm {
                                 class="time-select start-time w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 data-date="${date}" data-index="${index}">
                             <option value="">Select start time</option>
-                            ${optionsHTML}
+                            ${startOptionsHTML}
                         </select>
                     </div>
                     <div class="flex items-center justify-center text-gray-500">
@@ -171,7 +236,7 @@ export class AvailabilityForm {
                                 class="time-select end-time w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 data-date="${date}" data-index="${index}">
                             <option value="">Select end time</option>
-                            ${optionsHTML}
+                            ${endOptionsHTML}
                         </select>
                     </div>
                     <div class="flex items-end">
