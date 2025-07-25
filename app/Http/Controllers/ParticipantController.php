@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateAvailabilityRequest;
 use App\Models\Event;
 use App\Models\EventParticipant;
 use App\Models\ParticipantAvailability;
@@ -37,9 +38,9 @@ class ParticipantController extends Controller
     }
 
     /**
-     * Show participant availability editing interface and handle availability updates.
+     * Show participant availability editing interface.
      */
-    public function editAvailability(Event $event, EventParticipant $participant)
+    public function show(Event $event, EventParticipant $participant)
     {
         // Verify participant belongs to this event
         if ($participant->event_id !== $event->id) {
@@ -47,16 +48,17 @@ class ParticipantController extends Controller
                 ->with('error', 'Invalid participant access. Please enter your name to continue.');
         }
 
-        // Handle POST request (save availability)
-        if (request()->isMethod('POST')) {
-            $validatedData = $this->validateAvailabilityData();
-            $availabilityData = $this->getValidatedAvailabilityData($validatedData);
-
-            return $this->saveAvailability($availabilityData, $event, $participant);
-        }
-
-        // Handle GET request (show form)
         return $this->showEditForm($event, $participant);
+    }
+
+    /**
+     * Update participant availability.
+     */
+    public function update(UpdateAvailabilityRequest $request, Event $event, EventParticipant $participant)
+    {
+        $availabilityData = $request->getFormattedAvailability();
+
+        return $this->saveAvailability($availabilityData, $event, $participant);
     }
 
     /**
@@ -82,85 +84,37 @@ class ParticipantController extends Controller
             })
             ->toArray();
 
-        return view('participant-edit', compact('event', 'participant', 'existingAvailability'));
-    }
-
-    /**
-     * Validate availability data with custom logic.
-     */
-    private function validateAvailabilityData(): array
-    {
-        $rules = [
-            'participant_name' => 'required|string|max:255',
-            'availability' => 'array',
-            'availability.*' => 'array',
-            'availability.*.*' => 'array',
-            'availability.*.*.start_time' => 'nullable|date_format:H:i',
-            'availability.*.*.end_time' => 'nullable|date_format:H:i',
-        ];
-
-        $messages = [
-            'participant_name.required' => 'Please enter your name.',
-            'participant_name.string' => 'Your name must be a valid text.',
-            'participant_name.max' => 'Your name cannot exceed 255 characters.',
-            'availability.*.*.start_time.date_format' => 'Start time must be in HH:MM format.',
-            'availability.*.*.end_time.date_format' => 'End time must be in HH:MM format.',
-        ];
-
-        $validated = request()->validate($rules, $messages);
-
-        // Custom validation for time ranges
-        $this->validateTimeRanges($validated['availability'] ?? []);
-
-        return $validated;
-    }
-
-    /**
-     * Validate time ranges logic.
-     */
-    private function validateTimeRanges(array $availability): void
-    {
-        foreach ($availability as $date => $timeRanges) {
-            foreach ($timeRanges as $index => $timeRange) {
-                $startTime = $timeRange['start_time'] ?? null;
-                $endTime = $timeRange['end_time'] ?? null;
-
-                // Both start and end time must be provided if one is provided
-                if (empty($startTime) || empty($endTime)) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        "availability.{$date}.{$index}" => 'Both start time and end time must be selected.',
-                    ]);
-                }
-
-                // End time must be later than start time
-                if ($startTime >= $endTime) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        "availability.{$date}.{$index}" => 'End time must be later than start time.',
-                    ]);
-                }
-            }
-        }
-    }
-
-    /**
-     * Get validated availability data in flat array format for storage.
-     */
-    private function getValidatedAvailabilityData(array $validated): array
-    {
-        $availability = $validated['availability'] ?? [];
-        $result = [];
-
-        foreach ($availability as $date => $timeRanges) {
-            foreach ($timeRanges as $timeRange) {
-                $result[] = [
-                    'date' => $date,
-                    'start_time' => $timeRange['start_time'],
-                    'end_time' => $timeRange['end_time'],
-                ];
-            }
+        // Generate time options for each time slot
+        $timeOptions = [];
+        foreach ($event->timeSlots as $timeSlot) {
+            $dateKey = $timeSlot->date->format('Y-m-d');
+            $timeOptions[$dateKey] = $this->generateTimeOptions(
+                $timeSlot->start_time,
+                $timeSlot->end_time
+            );
         }
 
-        return $result;
+        return view('participant-edit', compact('event', 'participant', 'existingAvailability', 'timeOptions'));
+    }
+
+    /**
+     * Generate time options for select dropdowns.
+     */
+    private function generateTimeOptions(string $startTime, string $endTime): array
+    {
+        $options = [];
+        $current = Carbon::createFromFormat('H:i:s', $startTime);
+        $end = Carbon::createFromFormat('H:i:s', $endTime);
+        $interval = 30; // 30 minutes
+
+        while ($current <= $end) {
+            $timeValue = $current->format('H:i');
+            $timeDisplay = $current->format('g:i A');
+            $options[$timeValue] = $timeDisplay;
+            $current->addMinutes($interval);
+        }
+
+        return $options;
     }
 
     /**

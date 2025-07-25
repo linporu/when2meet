@@ -53,9 +53,10 @@
         <form
             id="availability-form"
             method="POST"
-            action="{{ route("participants.availability.edit", [$event->hash, $participant->id]) }}"
+            action="{{ route("participants.availability.update", [$event->hash, $participant->id]) }}"
         >
             @csrf
+            @method('PUT')
 
             {{-- Hidden participant name to maintain compatibility with existing join method --}}
             <input type="hidden" name="participant_name" value="{{ $participant->name }}" />
