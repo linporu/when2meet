@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\JoinEventRequest;
 use App\Http\Requests\StoreEventRequest;
 use App\Models\Event;
+use App\Models\EventParticipant;
 use App\Models\EventTimeSlot;
+use App\Models\ParticipantAvailability;
 use Carbon\Carbon;
 
 class EventController extends Controller
@@ -66,5 +69,46 @@ class EventController extends Controller
         $event->load('timeSlots');
 
         return view('event-show', compact('event'));
+    }
+
+    /**
+     * Handle participant joining an event with availability.
+     */
+    public function join(JoinEventRequest $request, Event $event)
+    {
+        $validated = $request->validated();
+
+        // Create or update participant
+        $participant = EventParticipant::updateOrCreate(
+            [
+                'event_id' => $event->id,
+                'name' => $validated['participant_name'],
+            ],
+            [
+                'event_id' => $event->id,
+                'name' => $validated['participant_name'],
+            ]
+        );
+
+        // Delete existing availability records for this participant
+        ParticipantAvailability::where('participant_id', $participant->id)->delete();
+
+        // Get validated availability data
+        $availabilityData = $request->getValidatedAvailability();
+
+        // Create new availability records
+        foreach ($availabilityData as $availability) {
+            ParticipantAvailability::create([
+                'event_id' => $event->id,
+                'participant_id' => $participant->id,
+                'date' => $availability['date'],
+                'start_time' => $availability['start_time'],
+                'end_time' => $availability['end_time'],
+            ]);
+        }
+
+        return redirect()
+            ->route('events.show', $event->hash)
+            ->with('success', 'Successfully joined the event and saved your availability!');
     }
 }

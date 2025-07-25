@@ -6,15 +6,10 @@ parameters:
         - app
         - database
         - routes
-        - tests
     
     level: 4
     
     ignoreErrors:
-        - '#Undefined variable: \$this#'
-        # Laravel Model dynamic properties and methods in tests
-        - '#Access to an undefined property Illuminate\\Database\\Eloquent\\Model::#'
-        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Model::#'
     
     excludePaths:
         - bootstrap/*

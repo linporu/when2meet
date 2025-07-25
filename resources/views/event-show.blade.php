@@ -35,27 +35,7 @@
             @endforeach
         </div>
 
-        {{-- Participant Join Form --}}
-        <div class="border-t pt-8">
-            <h2 class="mb-4 text-xl font-semibold text-gray-800">Join Event</h2>
-            <p class="mb-4 text-gray-600">
-                Enter your name to participate in this event:
-            </p>
-
-            <form method="POST" action="#">
-                @csrf
-
-                <x-forms.input
-                    name="participant_name"
-                    label="Your Name"
-                    placeholder="Enter your name"
-                    :required="true"
-                />
-
-                <div class="mb-6">
-                    <x-button type="submit" class="w-full">Join Event</x-button>
-                </div>
-            </form>
-        </div>
+        {{-- Availability Form --}}
+        <x-availability-form :event="$event" />
     </x-card>
 </x-layout>
