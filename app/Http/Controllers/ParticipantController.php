@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use App\Models\EventParticipant;
 use App\Models\ParticipantAvailability;
+use Carbon\Carbon;
 
 class ParticipantController extends Controller
 {
@@ -67,12 +68,14 @@ class ParticipantController extends Controller
         // Load existing availability data for this participant
         $existingAvailability = $participant->participantAvailabilities()
             ->get()
-            ->groupBy('date')
+            ->groupBy(function ($availability) {
+                return $availability->date->format('Y-m-d');
+            })
             ->map(function ($availabilities) {
                 return $availabilities->map(function ($availability) {
                     return [
-                        'start_time' => $availability->start_time,
-                        'end_time' => $availability->end_time,
+                        'start_time' => Carbon::parse($availability->start_time)->format('H:i'),
+                        'end_time' => Carbon::parse($availability->end_time)->format('H:i'),
                     ];
                 })->toArray();
             })
