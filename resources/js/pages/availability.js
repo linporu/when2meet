@@ -1,7 +1,33 @@
 // Availability Form JavaScript
+import { TimezoneConverter } from "./timezone.js";
+
 export class AvailabilityForm {
     constructor() {
         this.form = null;
+        this.timezoneConverter = new TimezoneConverter();
+    }
+
+    /**
+     * Convert UTC time options to local time format
+     */
+    convertTimeOptionsToLocal(timeOptions) {
+        if (Array.isArray(timeOptions)) {
+            return timeOptions;
+        }
+
+        const convertedOptions = {};
+        for (const [utcTime, displayText] of Object.entries(timeOptions)) {
+            const localTime = this.timezoneConverter.convertUtcToLocal(utcTime);
+            // Create a more readable format for local time display
+            const localDisplayTime = new Date(`1970-01-01T${this.timezoneConverter.normalizeTimeString(utcTime)}Z`)
+                .toLocaleTimeString("en-US", {
+                    hour12: true,
+                    hour: "numeric",
+                    minute: "2-digit"
+                });
+            convertedOptions[localTime] = localDisplayTime;
+        }
+        return convertedOptions;
     }
 
     /**
@@ -37,6 +63,9 @@ export class AvailabilityForm {
             const existingRanges = JSON.parse(container.dataset.existingRanges || "[]");
             const timeOptions = JSON.parse(container.dataset.timeOptions || "[]");
             
+            // Convert UTC time options to local time
+            const localTimeOptions = this.convertTimeOptionsToLocal(timeOptions);
+            
             // Clear container
             container.innerHTML = "";
             
@@ -44,12 +73,18 @@ export class AvailabilityForm {
             if (existingRanges.length > 0) {
                 // Render existing ranges
                 existingRanges.forEach((range, index) => {
+                    // Convert existing UTC times to local times for proper option selection
+                    const localStartTime = range.start_time ? 
+                        this.timezoneConverter.convertUtcToLocal(range.start_time) : "";
+                    const localEndTime = range.end_time ? 
+                        this.timezoneConverter.convertUtcToLocal(range.end_time) : "";
+                        
                     const timeRangeHTML = this.createTimeRangeSelectorHTML(
                         date, 
                         index, 
-                        timeOptions,
-                        range.start_time || "",
-                        range.end_time || ""
+                        localTimeOptions,
+                        localStartTime,
+                        localEndTime
                     );
                     container.insertAdjacentHTML("beforeend", timeRangeHTML);
                 });
@@ -58,7 +93,7 @@ export class AvailabilityForm {
                 const timeRangeHTML = this.createTimeRangeSelectorHTML(
                     date, 
                     0, 
-                    timeOptions
+                    localTimeOptions
                 );
                 container.insertAdjacentHTML("beforeend", timeRangeHTML);
             }
@@ -133,8 +168,43 @@ export class AvailabilityForm {
         this.form.addEventListener("submit", (e) => {
             if (!this.validateAvailabilityForm()) {
                 e.preventDefault();
+                return;
+            }
+            
+            // Convert local times back to UTC before submission
+            this.convertFormTimesToUtc();
+        });
+    }
+
+    /**
+     * Convert form local times back to UTC before submission
+     */
+    convertFormTimesToUtc() {
+        const timeSelects = this.form.querySelectorAll(".time-select");
+        
+        timeSelects.forEach(select => {
+            if (select.value) {
+                // Convert local time back to UTC for backend processing
+                const utcTime = this.convertLocalToUtc(select.value);
+                select.value = utcTime;
             }
         });
+    }
+
+    /**
+     * Convert local time back to UTC
+     */
+    convertLocalToUtc(localTimeString) {
+        try {
+            // Create a date object with the local time
+            const localDate = new Date(`1970-01-01T${this.timezoneConverter.normalizeTimeString(localTimeString)}`);
+            
+            // Convert to UTC and format as HH:MM
+            return localDate.toISOString().substring(11, 16);
+        } catch (error) {
+            console.error("Local to UTC conversion failed:", error, localTimeString);
+            return localTimeString; // Return original time as fallback
+        }
     }
 
     /**
@@ -149,12 +219,15 @@ export class AvailabilityForm {
 
         // Get time options from container data
         const timeOptions = JSON.parse(container.dataset.timeOptions || "[]");
+        
+        // Convert UTC time options to local time
+        const localTimeOptions = this.convertTimeOptionsToLocal(timeOptions);
 
         // Create new time range selector HTML
         const newTimeRangeHTML = this.createTimeRangeSelectorHTML(
             date,
             newIndex,
-            timeOptions
+            localTimeOptions
         );
 
         // Append to container
