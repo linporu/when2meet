@@ -8,6 +8,6 @@ Route::controller(EventController::class)->group(function () {
     Route::post('/', 'store')->name('events.store');
     Route::get('/{event:hash}', 'show')->name('events.show');
     Route::post('/{event:hash}/enter-name', 'enterName')->name('events.enterName');
-    Route::get('/{event:hash}/participant/{participant}/edit', 'editAvailability')->name('events.editAvailability');
+    Route::match(['GET', 'POST'], '/{event:hash}/participant/{participant}/edit', 'editAvailability')->name('events.editAvailability');
     Route::post('{event:hash}/join', 'join')->name('events.join');
 });

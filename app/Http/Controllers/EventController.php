@@ -99,7 +99,7 @@ class EventController extends Controller
     }
 
     /**
-     * Show participant availability editing interface.
+     * Show participant availability editing interface and handle availability updates.
      */
     public function editAvailability(Event $event, EventParticipant $participant)
     {
@@ -108,6 +108,23 @@ class EventController extends Controller
             abort(404);
         }
 
+        // Handle POST request (save availability)
+        if (request()->isMethod('POST')) {
+            $joinRequest = JoinEventRequest::createFromBase(request());
+            $joinRequest->validateResolved();
+
+            return $this->saveAvailability($joinRequest, $event, $participant);
+        }
+
+        // Handle GET request (show form)
+        return $this->showEditForm($event, $participant);
+    }
+
+    /**
+     * Show the edit form with current availability data.
+     */
+    private function showEditForm(Event $event, EventParticipant $participant)
+    {
         $event->load('timeSlots');
 
         // Load existing availability data for this participant
@@ -125,6 +142,34 @@ class EventController extends Controller
             ->toArray();
 
         return view('participant-edit', compact('event', 'participant', 'existingAvailability'));
+    }
+
+    /**
+     * Save participant availability and re-render the form.
+     */
+    private function saveAvailability(JoinEventRequest $request, Event $event, EventParticipant $participant)
+    {
+
+        // Delete existing availability records for this participant
+        ParticipantAvailability::where('participant_id', $participant->id)->delete();
+
+        // Get validated availability data
+        $availabilityData = $request->getValidatedAvailability();
+
+        // Create new availability records
+        foreach ($availabilityData as $availability) {
+            ParticipantAvailability::create([
+                'event_id' => $event->id,
+                'participant_id' => $participant->id,
+                'date' => $availability['date'],
+                'start_time' => $availability['start_time'],
+                'end_time' => $availability['end_time'],
+            ]);
+        }
+
+        // Re-render the form with fresh data and success message
+        return $this->showEditForm($event, $participant)
+            ->with('success', 'Your availability has been saved successfully!');
     }
 
     /**
@@ -163,12 +208,24 @@ class EventController extends Controller
             ]);
         }
 
-        // Find the participant to redirect back to their edit page
-        return redirect()
-            ->route('events.editAvailability', [
-                'event' => $event->hash,
-                'participant' => $participant->id,
-            ])
+        // Instead of redirecting, re-render the edit page with fresh data
+        $event->load('timeSlots');
+
+        // Load existing availability data for this participant (fresh from database)
+        $existingAvailability = $participant->participantAvailabilities()
+            ->get()
+            ->groupBy('date')
+            ->map(function ($availabilities) {
+                return $availabilities->map(function ($availability) {
+                    return [
+                        'start_time' => $availability->start_time,
+                        'end_time' => $availability->end_time,
+                    ];
+                })->toArray();
+            })
+            ->toArray();
+
+        return view('participant-edit', compact('event', 'participant', 'existingAvailability'))
             ->with('success', 'Your availability has been saved successfully!');
     }
 }
