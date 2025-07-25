@@ -4,8 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
+/**
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\EventTimeSlot> $timeSlots
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\EventParticipant> $participants
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ParticipantAvailability> $participantAvailabilities
+ */
 class Event extends Model
 {
     use HasFactory;
@@ -42,17 +48,17 @@ class Event extends Model
         return $hash;
     }
 
-    public function timeSlots()
+    public function timeSlots(): HasMany
     {
         return $this->hasMany(EventTimeSlot::class);
     }
 
-    public function participants()
+    public function participants(): HasMany
     {
         return $this->hasMany(EventParticipant::class);
     }
 
-    public function participantAvailabilities()
+    public function participantAvailabilities(): HasMany
     {
         return $this->hasMany(ParticipantAvailability::class);
     }
