@@ -152,7 +152,11 @@ composer run dev              # Start all services (recommended)
 ### Testing & Quality
 
 ```bash
-composer run test             # Run all tests
+pnpm run test                # Run all front end test
+pnpm run fix                 # Manual formatting (ESLint)
+pnpm run lint                 # Front end quality check
+pnpm run lint-verbose         # Detailed linting issues
+composer run test             # Run all laravel tests
 composer run fix             # Manual formatting (Laravel Pint)
 composer run code             # Auto-fix formatting + quality check
 composer run lint-verbose    # Detailed linting issues
