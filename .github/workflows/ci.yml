@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    
     runs-on: ubuntu-latest
 
     steps:
@@ -26,6 +27,11 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
@@ -34,19 +40,19 @@ jobs:
           restore-keys: |
             composer-
 
-      - name: Cache NPM dependencies
+      - name: Cache pnpm store
         uses: actions/cache@v4
         with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('**/package-lock.json') }}
+          path: ~/.pnpm-store
+          key: pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            npm-
+            pnpm-
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
-      - name: Install NPM dependencies
-        run: npm install
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Prepare Laravel application
         run: |
@@ -54,7 +60,9 @@ jobs:
           php artisan key:generate
 
       - name: Build frontend assets
-        run: npm run build
+        run: pnpm run build
 
       - name: Run tests and linting
-        run: composer run ci
+        run: |
+          composer run ci
+          pnpm run ci

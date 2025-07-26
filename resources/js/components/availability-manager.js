@@ -5,7 +5,6 @@
 
 import { TimeRangeSelector } from './time-range-selector.js';
 import { TimezoneConverter } from './timezone-converter.js';
-import { FormValidator } from '../utils/form-validator.js';
 import { DOMHelpers } from '../utils/dom-helpers.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 
@@ -16,7 +15,7 @@ export class AvailabilityManager {
         this.timeRangeSelectors = [];
         this.timezoneConverter = new TimezoneConverter();
         this.timeOptions = this.parseTimeOptions();
-        
+
         this.init();
     }
 
@@ -35,7 +34,7 @@ export class AvailabilityManager {
      */
     parseTimeOptions() {
         return ErrorHandler.safeExecute(() => {
-            const timeOptions = JSON.parse(this.container.dataset.timeOptions || "[]");
+            const timeOptions = JSON.parse(this.container.dataset.timeOptions || '[]');
             return this.timezoneConverter.convertTimeOptionsToLocal(timeOptions);
         }, 'Time Options Parsing', []);
     }
@@ -47,9 +46,9 @@ export class AvailabilityManager {
         ErrorHandler.safeExecute(() => {
             // Use event delegation for add button
             DOMHelpers.addDelegatedListener(
-                this.container.parentElement, 
-                '.add-time-range', 
-                'click', 
+                this.container.parentElement,
+                '.add-time-range',
+                'click',
                 (e) => {
                     e.preventDefault();
                     this.addTimeRange();
@@ -58,9 +57,9 @@ export class AvailabilityManager {
 
             // Use event delegation for remove buttons
             DOMHelpers.addDelegatedListener(
-                this.container, 
-                '.remove-time-range', 
-                'click', 
+                this.container,
+                '.remove-time-range',
+                'click',
                 (e, button) => {
                     e.preventDefault();
                     const selectorElement = button.closest('.time-range-selector');
@@ -75,8 +74,8 @@ export class AvailabilityManager {
      */
     renderExistingRanges() {
         ErrorHandler.safeExecute(() => {
-            const existingRanges = JSON.parse(this.container.dataset.existingRanges || "[]");
-            
+            const existingRanges = JSON.parse(this.container.dataset.existingRanges || '[]');
+
             // Clear container
             DOMHelpers.clearContent(this.container);
             this.timeRangeSelectors = [];
@@ -85,18 +84,18 @@ export class AvailabilityManager {
                 // Render existing ranges
                 existingRanges.forEach((range, index) => {
                     // Convert existing UTC times to local times for proper option selection
-                    const localStartTime = range.start_time ? 
-                        this.timezoneConverter.convertUtcToLocal(range.start_time) : "";
-                    const localEndTime = range.end_time ? 
-                        this.timezoneConverter.convertUtcToLocal(range.end_time) : "";
-                        
+                    const localStartTime = range.start_time ?
+                        this.timezoneConverter.convertUtcToLocal(range.start_time) : '';
+                    const localEndTime = range.end_time ?
+                        this.timezoneConverter.convertUtcToLocal(range.end_time) : '';
+
                     this.createTimeRangeSelector(index, localStartTime, localEndTime);
                 });
             } else {
                 // Render default empty time range
                 this.createTimeRangeSelector(0);
             }
-            
+
             this.updateRemoveButtonsVisibility();
         }, 'Render Existing Ranges');
     }
@@ -104,17 +103,17 @@ export class AvailabilityManager {
     /**
      * Create a new time range selector
      */
-    createTimeRangeSelector(index, startTime = "", endTime = "") {
+    createTimeRangeSelector(index, startTime = '', endTime = '') {
         return ErrorHandler.safeExecute(() => {
             const selector = new TimeRangeSelector(
-                this.date, 
-                index, 
-                this.timeOptions, 
-                startTime, 
+                this.date,
+                index,
+                this.timeOptions,
+                startTime,
                 endTime
             );
 
-            const element = selector.render(this.container);
+            selector.render(this.container);
             this.timeRangeSelectors.push(selector);
 
             return selector;
@@ -137,10 +136,10 @@ export class AvailabilityManager {
      */
     removeTimeRange(selectorElement) {
         ErrorHandler.safeExecute(() => {
-            if (!selectorElement) return;
+            if (!selectorElement) {return;}
 
             const index = parseInt(selectorElement.dataset.index);
-            
+
             // Remove from array
             const selector = this.timeRangeSelectors[index];
             if (selector) {
@@ -171,7 +170,7 @@ export class AvailabilityManager {
     updateRemoveButtonsVisibility() {
         ErrorHandler.safeExecute(() => {
             const shouldShowRemove = this.timeRangeSelectors.length > 1;
-            
+
             this.timeRangeSelectors.forEach(selector => {
                 selector.toggleRemoveButton(shouldShowRemove);
             });
@@ -184,13 +183,13 @@ export class AvailabilityManager {
     validateAll() {
         return ErrorHandler.safeExecute(() => {
             let isValid = true;
-            
+
             this.timeRangeSelectors.forEach(selector => {
                 if (!selector.validate()) {
                     isValid = false;
                 }
             });
-            
+
             return isValid;
         }, 'Validate All Time Ranges', false);
     }
@@ -212,9 +211,9 @@ export class AvailabilityManager {
             return this.timeRangeSelectors.map(selector => {
                 const values = selector.getValues();
                 return {
-                    startTime: values.startTime ? 
+                    startTime: values.startTime ?
                         this.timezoneConverter.convertLocalToUtc(values.startTime) : '',
-                    endTime: values.endTime ? 
+                    endTime: values.endTime ?
                         this.timezoneConverter.convertLocalToUtc(values.endTime) : ''
                 };
             });
@@ -240,12 +239,12 @@ export class AvailabilityManager {
                 const lastSelector = this.timeRangeSelectors.pop();
                 lastSelector.remove();
             }
-            
+
             // Clear the remaining selector
             if (this.timeRangeSelectors.length > 0) {
                 this.timeRangeSelectors[0].clear();
             }
-            
+
             this.updateRemoveButtonsVisibility();
         }, 'Reset to One Time Range');
     }
@@ -290,8 +289,8 @@ export class AvailabilityManager {
             // Create new ranges
             ranges.forEach((range, index) => {
                 this.createTimeRangeSelector(
-                    index, 
-                    range.startTime || '', 
+                    index,
+                    range.startTime || '',
                     range.endTime || ''
                 );
             });

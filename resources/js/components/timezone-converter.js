@@ -28,7 +28,7 @@ export class TimezoneConverter {
             const now = new Date();
             const offsetMinutes = now.getTimezoneOffset();
             const offsetHours = Math.abs(offsetMinutes / 60);
-            const sign = offsetMinutes <= 0 ? "+" : "-";
+            const sign = offsetMinutes <= 0 ? '+' : '-';
             return `GMT${sign}${offsetHours}`;
         }, 'Timezone Offset Calculation', 'GMT+0');
     }
@@ -40,6 +40,11 @@ export class TimezoneConverter {
      */
     convertUtcToLocal(utcTimeString) {
         return ErrorHandler.safeExecute(() => {
+            // Return empty string for invalid/empty input
+            if (!utcTimeString || utcTimeString.trim() === '') {
+                return '';
+            }
+
             // Normalize the time string to ensure it's in HH:MM:SS format
             const normalizedTime = this.normalizeTimeString(utcTimeString);
 
@@ -47,12 +52,12 @@ export class TimezoneConverter {
             const utcDate = new Date(`1970-01-01T${normalizedTime}Z`);
 
             // Convert to local time and format it
-            return utcDate.toLocaleTimeString("en-GB", {
+            return utcDate.toLocaleTimeString('en-GB', {
                 hour12: false,
-                hour: "2-digit",
-                minute: "2-digit",
+                hour: '2-digit',
+                minute: '2-digit'
             });
-        }, 'UTC to Local Conversion', utcTimeString);
+        }, 'UTC to Local Conversion', '');
     }
 
     /**
@@ -62,18 +67,24 @@ export class TimezoneConverter {
      */
     convertLocalToUtc(localTimeString) {
         return ErrorHandler.safeExecute(() => {
+            // Return empty string for invalid/empty input
+            if (!localTimeString || localTimeString.trim() === '') {
+                return '';
+            }
+
             const normalized = this.normalizeTimeString(localTimeString);
-            
+
             // Create a proper local date object
             const [hours, minutes] = normalized.split(':').map(Number);
             const localDate = new Date();
             localDate.setHours(hours, minutes, 0, 0);
-            
-            // Convert to UTC and format as HH:MM
+
+            // Convert to UTC and format as HH:MM:SS
             const utcHours = localDate.getUTCHours().toString().padStart(2, '0');
             const utcMinutes = localDate.getUTCMinutes().toString().padStart(2, '0');
-            return `${utcHours}:${utcMinutes}`;
-        }, 'Local to UTC Conversion', localTimeString);
+            const utcSeconds = localDate.getUTCSeconds().toString().padStart(2, '0');
+            return `${utcHours}:${utcMinutes}:${utcSeconds}`;
+        }, 'Local to UTC Conversion', '');
     }
 
     /**
@@ -83,23 +94,23 @@ export class TimezoneConverter {
      */
     normalizeTimeString(timeString) {
         return ErrorHandler.safeExecute(() => {
-            if (!timeString) return "00:00:00";
+            if (!timeString) {return '00:00:00';}
 
             // Remove whitespace
             timeString = timeString.trim();
 
             // If the format is HH:MM, add seconds
             if (timeString.match(/^\d{1,2}:\d{2}$/)) {
-                timeString += ":00";
+                timeString += ':00';
             }
 
             // Ensure the hour is two digits
             if (timeString.match(/^\d:\d{2}:\d{2}$/)) {
-                timeString = "0" + timeString;
+                timeString = '0' + timeString;
             }
 
             return timeString;
-        }, 'Time String Normalization', timeString || "00:00:00");
+        }, 'Time String Normalization', timeString || '00:00:00');
     }
 
     /**
@@ -112,14 +123,14 @@ export class TimezoneConverter {
             }
 
             const convertedOptions = {};
-            for (const [utcTime, displayText] of Object.entries(timeOptions)) {
+            for (const [utcTime] of Object.entries(timeOptions)) {
                 const localTime = this.convertUtcToLocal(utcTime);
                 // Create a more readable format for local time display
                 const localDisplayTime = new Date(`1970-01-01T${this.normalizeTimeString(utcTime)}Z`)
-                    .toLocaleTimeString("en-US", {
+                    .toLocaleTimeString('en-US', {
                         hour12: true,
-                        hour: "numeric",
-                        minute: "2-digit"
+                        hour: 'numeric',
+                        minute: '2-digit'
                     });
                 convertedOptions[localTime] = localDisplayTime;
             }
@@ -133,11 +144,11 @@ export class TimezoneConverter {
     initializePageTimezone() {
         return ErrorHandler.safeExecute(() => {
             // Find all elements that require timezone conversion
-            const timezoneElements = document.querySelectorAll(".timezone-display");
+            const timezoneElements = document.querySelectorAll('.timezone-display');
 
             timezoneElements.forEach((element) => {
-                const utcStart = element.getAttribute("data-utc-start");
-                const utcEnd = element.getAttribute("data-utc-end");
+                const utcStart = element.getAttribute('data-utc-start');
+                const utcEnd = element.getAttribute('data-utc-end');
 
                 if (utcStart && utcEnd) {
                     const localStart = this.convertUtcToLocal(utcStart);
@@ -155,7 +166,6 @@ export class TimezoneConverter {
                 }
             });
 
-            console.log(`Initialized ${timezoneElements.length} timezone display elements`);
         }, 'Page Timezone Initialization', false);
     }
 
@@ -185,7 +195,7 @@ export class TimezoneConverter {
         return ErrorHandler.safeExecute(() => {
             const date1 = new Date(`1970-01-01T${this.normalizeTimeString(utcTime1)}Z`);
             const date2 = new Date(`1970-01-01T${this.normalizeTimeString(utcTime2)}Z`);
-            
+
             return date1.toDateString() === date2.toDateString();
         }, 'Same Day Check', true);
     }

@@ -3,13 +3,13 @@
  * Now uses modular components and utilities for better maintainability
  */
 
-import { TimezoneConverter } from "../components/timezone-converter.js";
-import { AvailabilityForm } from "./availability.js";
-import { FormValidator } from "../utils/form-validator.js";
-import { DOMHelpers } from "../utils/dom-helpers.js";
-import { ErrorHandler } from "../utils/error-handler.js";
+import { TimezoneConverter } from '../components/timezone-converter.js';
+import { AvailabilityForm } from './availability.js';
+import { FormValidator } from '../utils/form-validator.js';
+import { DOMHelpers } from '../utils/dom-helpers.js';
+import { ErrorHandler } from '../utils/error-handler.js';
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener('DOMContentLoaded', function () {
     // Initialize all page functionality
     initEventForm();
     initTimezoneDisplay();
@@ -20,40 +20,39 @@ document.addEventListener("DOMContentLoaded", function () {
  * Initialize event form functionality
  */
 function initEventForm() {
-    const form = DOMHelpers.querySelector("#event-form");
-    if (!form) return;
+    const form = DOMHelpers.querySelector('#event-form');
+    if (!form) {return;}
 
     ErrorHandler.safeExecute(() => {
         setupFormValidation(form);
         setupFormSubmission(form);
-        console.log("Event form initialized");
     }, 'Event Form Initialization');
 }
 
 /**
  * Setup form validation with real-time feedback
  */
-function setupFormValidation(form) {
-    const nameInput = DOMHelpers.querySelector("#event_name");
-    const dateInput = DOMHelpers.querySelector("#date");
-    const startTimeInput = DOMHelpers.querySelector("#start_time");
-    const endTimeInput = DOMHelpers.querySelector("#end_time");
+function setupFormValidation() {
+    const nameInput = DOMHelpers.querySelector('#event_name');
+    const dateInput = DOMHelpers.querySelector('#date');
+    const startTimeInput = DOMHelpers.querySelector('#start_time');
+    const endTimeInput = DOMHelpers.querySelector('#end_time');
 
     // Real-time validation
     if (nameInput) {
-        nameInput.addEventListener("blur", () => validateEventName(nameInput));
+        nameInput.addEventListener('blur', () => validateEventName(nameInput));
     }
 
     if (dateInput) {
-        dateInput.addEventListener("change", () => validateDate(dateInput));
+        dateInput.addEventListener('change', () => validateDate(dateInput));
         // Set minimum date to today
-        const today = new Date().toISOString().split("T")[0];
+        const today = new Date().toISOString().split('T')[0];
         dateInput.min = today;
     }
 
     if (startTimeInput && endTimeInput) {
-        startTimeInput.addEventListener("change", () => validateTimeRange(startTimeInput, endTimeInput));
-        endTimeInput.addEventListener("change", () => validateTimeRange(startTimeInput, endTimeInput));
+        startTimeInput.addEventListener('change', () => validateTimeRange(startTimeInput, endTimeInput));
+        endTimeInput.addEventListener('change', () => validateTimeRange(startTimeInput, endTimeInput));
     }
 }
 
@@ -61,7 +60,7 @@ function setupFormValidation(form) {
  * Setup form submission with comprehensive validation
  */
 function setupFormSubmission(form) {
-    form.addEventListener("submit", function (e) {
+    form.addEventListener('submit', function (e) {
         if (!validateEventForm()) {
             e.preventDefault();
         }
@@ -100,10 +99,10 @@ function validateTimeRange(startTimeInput, endTimeInput) {
  */
 function validateEventForm() {
     return ErrorHandler.safeExecute(() => {
-        const nameInput = DOMHelpers.querySelector("#event_name");
-        const dateInput = DOMHelpers.querySelector("#date");
-        const startTimeInput = DOMHelpers.querySelector("#start_time");
-        const endTimeInput = DOMHelpers.querySelector("#end_time");
+        const nameInput = DOMHelpers.querySelector('#event_name');
+        const dateInput = DOMHelpers.querySelector('#date');
+        const startTimeInput = DOMHelpers.querySelector('#start_time');
+        const endTimeInput = DOMHelpers.querySelector('#end_time');
 
         const isNameValid = validateEventName(nameInput);
         const isDateValid = validateDate(dateInput);
@@ -120,8 +119,8 @@ function validateEventForm() {
 function initTimezoneDisplay() {
     return ErrorHandler.safeExecute(() => {
         // Check if there are timezone conversion elements on the page
-        const timezoneElements = document.querySelectorAll(".timezone-display");
-        if (timezoneElements.length === 0) return;
+        const timezoneElements = document.querySelectorAll('.timezone-display');
+        if (timezoneElements.length === 0) {return;}
 
         // Create a TimezoneConverter instance
         const converter = new TimezoneConverter();
@@ -129,7 +128,6 @@ function initTimezoneDisplay() {
         // Initialize page timezone conversion
         converter.initializePageTimezone();
 
-        console.log(`Initialized ${timezoneElements.length} timezone display elements`);
     }, 'Timezone Display Initialization');
 }
 
