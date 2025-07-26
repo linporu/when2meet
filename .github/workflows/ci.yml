@@ -64,5 +64,4 @@ jobs:
       - name: Run tests and linting
         run: |
           composer run ci
-          pnpm run test
-          pnpm run lint
+          pnpm run ci

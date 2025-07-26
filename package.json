@@ -10,6 +10,7 @@
         "lint": "eslint resources/js tests/frontend --quiet",
         "lint-verbose": "eslint resources/js tests/frontend",
         "code": "pnpm run fix && pnpm run lint",
+        "ci": "vitest run && pnpm run lint-verbose",
         "test:ui": "vitest --ui",
         "test:coverage": "vitest --coverage",
         "test:watch": "vitest"
