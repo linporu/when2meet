@@ -33,7 +33,10 @@
       "WebFetch(domain:stackoverflow.com)",
       "WebFetch(domain:pnpm.io)",
       "Bash(pnpm run:*)",
-      "Bash(npx vitest run:*)"
+      "Bash(npx vitest run:*)",
+      "Bash(./vendor/bin/pest --list-tests)",
+      "Bash(./vendor/bin/pest tests/Feature/)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
