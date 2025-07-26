@@ -21,16 +21,16 @@ export class AvailabilityForm {
      */
     initialize() {
         return ErrorHandler.safeExecute(() => {
-            this.form = DOMHelpers.querySelector("#availability-form");
-            if (!this.form) return;
+            this.form = DOMHelpers.querySelector('#availability-form');
+            if (!this.form) {return;}
 
             // Initialize availability managers for each date
             this.initializeAvailabilityManagers();
-            
+
             // Initialize form submission handling
             this.initFormSubmission();
 
-            console.log("Availability form initialized with modular components");
+            console.log('Availability form initialized with modular components');
         }, 'Availability Form Initialization');
     }
 
@@ -39,12 +39,12 @@ export class AvailabilityForm {
      */
     initializeAvailabilityManagers() {
         ErrorHandler.safeExecute(() => {
-            const timeRangeLists = this.form.querySelectorAll(".time-range-list");
-            
+            const timeRangeLists = this.form.querySelectorAll('.time-range-list');
+
             timeRangeLists.forEach(timeRangeList => {
-                const container = timeRangeList.querySelector(".time-ranges-container");
+                const container = timeRangeList.querySelector('.time-ranges-container');
                 const date = timeRangeList.dataset.date;
-                
+
                 if (container && date) {
                     const manager = new AvailabilityManager(container, date);
                     this.availabilityManagers.push(manager);
@@ -57,19 +57,19 @@ export class AvailabilityForm {
      * Initialize form submission validation
      */
     initFormSubmission() {
-        if (!this.form) return;
+        if (!this.form) {return;}
 
         ErrorHandler.safeExecute(() => {
-            this.form.addEventListener("submit", (e) => {
+            this.form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                
+
                 if (!this.validateAvailabilityForm()) {
                     return;
                 }
-                
+
                 // Convert local times to UTC using hidden fields
                 this.convertTimesToUtcForSubmission();
-                
+
                 // Submit the form normally (maintains Laravel flow)
                 this.form.submit();
             });
@@ -81,19 +81,19 @@ export class AvailabilityForm {
      */
     convertTimesToUtcForSubmission() {
         ErrorHandler.safeExecute(() => {
-            const timeSelects = this.form.querySelectorAll(".time-select");
-            
+            const timeSelects = this.form.querySelectorAll('.time-select');
+
             timeSelects.forEach(select => {
                 if (select.value) {
                     const utcTime = this.timezoneConverter.convertLocalToUtc(select.value);
-                    
+
                     // Create hidden field with UTC time
                     const hiddenInput = document.createElement('input');
                     hiddenInput.type = 'hidden';
                     hiddenInput.name = select.name; // Same name as select
                     hiddenInput.value = utcTime;
                     this.form.appendChild(hiddenInput);
-                    
+
                     // Clear original select name to avoid duplicate submission
                     select.name = '';
                 }

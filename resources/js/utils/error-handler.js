@@ -49,7 +49,7 @@ export class ErrorHandler {
             timeString,
             operation
         });
-        
+
         // Return fallback value
         return timeString;
     }
@@ -113,7 +113,7 @@ export class ErrorHandler {
             const form = document.querySelector('form');
             const card = document.querySelector('.card, .max-w-2xl, .max-w-4xl');
             const main = document.querySelector('main');
-            
+
             const targetContainer = form || card || main || document.body;
             targetContainer.insertBefore(errorElement, targetContainer.firstChild);
         }
@@ -131,10 +131,10 @@ export class ErrorHandler {
      */
     static clearUserErrors(container = null) {
         const selector = '.bg-red-50';
-        const errors = container 
+        const errors = container
             ? container.querySelectorAll(selector)
             : document.querySelectorAll(selector);
-            
+
         errors.forEach(error => {
             if (error.parentNode) {
                 error.parentNode.removeChild(error);

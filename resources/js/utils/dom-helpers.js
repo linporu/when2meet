@@ -31,8 +31,8 @@ export class DOMHelpers {
     static addDelegatedListener(parent, selector, event, handler) {
         parent.addEventListener(event, (e) => {
             if (e.target.matches(selector) || e.target.closest(selector)) {
-                const target = e.target.matches(selector) 
-                    ? e.target 
+                const target = e.target.matches(selector)
+                    ? e.target
                     : e.target.closest(selector);
                 handler.call(target, e, target);
             }
@@ -42,9 +42,9 @@ export class DOMHelpers {
     /**
      * Create element with attributes and content
      */
-    static createElement(tag, attributes = {}, content = "") {
+    static createElement(tag, attributes = {}, content = '') {
         const element = document.createElement(tag);
-        
+
         Object.entries(attributes).forEach(([key, value]) => {
             if (key === 'className') {
                 element.className = value;
@@ -56,11 +56,11 @@ export class DOMHelpers {
                 element.setAttribute(key, value);
             }
         });
-        
+
         if (content) {
             element.textContent = content;
         }
-        
+
         return element;
     }
 
@@ -131,7 +131,7 @@ export class DOMHelpers {
      */
     static toggle(element) {
         if (element) {
-            const isHidden = element.style.display === 'none' || 
+            const isHidden = element.style.display === 'none' ||
                            getComputedStyle(element).display === 'none';
             element.style.display = isHidden ? '' : 'none';
         }

@@ -8,7 +8,7 @@ import { DOMHelpers } from '../utils/dom-helpers.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 
 export class TimeRangeSelector {
-    constructor(date, index, timeOptions, startTime = "", endTime = "") {
+    constructor(date, index, timeOptions, startTime = '', endTime = '') {
         this.date = date;
         this.index = index;
         this.timeOptions = timeOptions;
@@ -23,13 +23,13 @@ export class TimeRangeSelector {
     createHTML() {
         return ErrorHandler.safeExecute(() => {
             // Convert timeOptions object to array format if needed
-            const timeOptionsArray = Array.isArray(this.timeOptions) 
-                ? this.timeOptions 
+            const timeOptionsArray = Array.isArray(this.timeOptions)
+                ? this.timeOptions
                 : Object.entries(this.timeOptions).map(([value, text]) => ({ value, text }));
 
             // Generate options HTML for start time select
             const startOptionsHTML = this.generateOptionsHTML(timeOptionsArray, this.startTime);
-            
+
             // Generate options HTML for end time select
             const endOptionsHTML = this.generateOptionsHTML(timeOptionsArray, this.endTime);
 
@@ -80,9 +80,9 @@ export class TimeRangeSelector {
                 // Handle both DOM option elements and processed objects
                 const value = option.value || option;
                 const text = option.text || option.textContent || option;
-                const selected = value === selectedValue ? "selected" : "";
+                const selected = value === selectedValue ? 'selected' : '';
                 return `<option value="${value}" ${selected}>${text}</option>`;
-            }).join("");
+            }).join('');
         }, 'Options HTML Generation', '');
     }
 
@@ -93,13 +93,13 @@ export class TimeRangeSelector {
         return ErrorHandler.safeExecute(() => {
             const html = this.createHTML();
             DOMHelpers.insertHTMLAtEnd(container, html);
-            
+
             // Store reference to the created element
             this.element = container.lastElementChild;
-            
+
             // Setup event listeners
             this.setupEventListeners();
-            
+
             return this.element;
         }, 'Time Range Selector Render');
     }
@@ -108,7 +108,7 @@ export class TimeRangeSelector {
      * Setup event listeners for the time range selector
      */
     setupEventListeners() {
-        if (!this.element) return;
+        if (!this.element) {return;}
 
         ErrorHandler.safeExecute(() => {
             const startSelect = this.element.querySelector('.start-time');
@@ -118,7 +118,7 @@ export class TimeRangeSelector {
             if (startSelect) {
                 startSelect.addEventListener('change', () => this.validate());
             }
-            
+
             if (endSelect) {
                 endSelect.addEventListener('change', () => this.validate());
             }
@@ -129,7 +129,7 @@ export class TimeRangeSelector {
      * Validate the time range selector
      */
     validate() {
-        if (!this.element) return false;
+        if (!this.element) {return false;}
 
         return ErrorHandler.safeExecute(() => {
             return FormValidator.validateTimeRangeSelector(this.element);
@@ -140,7 +140,7 @@ export class TimeRangeSelector {
      * Get the selected values
      */
     getValues() {
-        if (!this.element) return { startTime: '', endTime: '' };
+        if (!this.element) {return { startTime: '', endTime: '' };}
 
         return ErrorHandler.safeExecute(() => {
             const startSelect = this.element.querySelector('.start-time');
@@ -157,7 +157,7 @@ export class TimeRangeSelector {
      * Set the selected values
      */
     setValues(startTime, endTime) {
-        if (!this.element) return;
+        if (!this.element) {return;}
 
         ErrorHandler.safeExecute(() => {
             const startSelect = this.element.querySelector('.start-time');
@@ -166,7 +166,7 @@ export class TimeRangeSelector {
             if (startSelect) {
                 startSelect.value = startTime || '';
             }
-            
+
             if (endSelect) {
                 endSelect.value = endTime || '';
             }
@@ -183,8 +183,8 @@ export class TimeRangeSelector {
     updateIndex(newIndex) {
         ErrorHandler.safeExecute(() => {
             this.index = newIndex;
-            
-            if (!this.element) return;
+
+            if (!this.element) {return;}
 
             // Update data attribute
             this.element.dataset.index = newIndex;
@@ -214,7 +214,7 @@ export class TimeRangeSelector {
      * Show/hide the remove button
      */
     toggleRemoveButton(show = true) {
-        if (!this.element) return;
+        if (!this.element) {return;}
 
         ErrorHandler.safeExecute(() => {
             const removeButton = this.element.querySelector('.remove-time-range');
