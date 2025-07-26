@@ -249,7 +249,7 @@ export class TimeRangeSelector {
      */
     isComplete() {
         const values = this.getValues();
-        return values.startTime && values.endTime;
+        return !!(values.startTime && values.endTime);
     }
 
     /**
@@ -257,6 +257,9 @@ export class TimeRangeSelector {
      */
     clear() {
         this.setValues('', '');
+        if (this.element) {
+            FormValidator.clearError(this.element);
+        }
     }
 
     /**

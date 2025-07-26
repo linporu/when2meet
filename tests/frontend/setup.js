@@ -29,6 +29,43 @@ if (typeof window !== 'undefined') {
         },
         writable: true
     });
+
+    // Mock window.location if needed
+    Object.defineProperty(window, 'location', {
+        value: {
+            href: 'http://localhost:3000',
+            origin: 'http://localhost:3000',
+            pathname: '/',
+            search: '',
+            hash: ''
+        },
+        writable: true
+    });
+
+    // Ensure better DOM support
+    if (!window.HTMLElement.prototype.insertAdjacentHTML) {
+        window.HTMLElement.prototype.insertAdjacentHTML = function(position, html) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+
+            switch (position) {
+            case 'beforebegin':
+                this.parentNode.insertBefore(tempDiv.firstChild, this);
+                break;
+            case 'afterbegin':
+                this.insertBefore(tempDiv.firstChild, this.firstChild);
+                break;
+            case 'beforeend':
+                while (tempDiv.firstChild) {
+                    this.appendChild(tempDiv.firstChild);
+                }
+                break;
+            case 'afterend':
+                this.parentNode.insertBefore(tempDiv.firstChild, this.nextSibling);
+                break;
+            }
+        };
+    }
 }
 
 // Reset all mocks before each test

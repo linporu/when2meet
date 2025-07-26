@@ -29,6 +29,11 @@ export class DOMHelpers {
      * Add event listener with delegation
      */
     static addDelegatedListener(parent, selector, event, handler) {
+        // Defensive programming - handle null/undefined parent gracefully
+        if (!parent || typeof parent.addEventListener !== 'function') {
+            return;
+        }
+
         parent.addEventListener(event, (e) => {
             if (e.target.matches(selector) || e.target.closest(selector)) {
                 const target = e.target.matches(selector)
@@ -102,10 +107,10 @@ export class DOMHelpers {
     }
 
     /**
-     * Get closest parent with selector
+     * Find closest parent with selector
      */
-    static getClosest(element, selector) {
-        return element.closest(selector);
+    static findClosest(element, selector) {
+        return element ? element.closest(selector) : null;
     }
 
     /**

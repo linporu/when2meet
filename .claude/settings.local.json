@@ -32,7 +32,8 @@
       "Bash(pnpm run test:*)",
       "WebFetch(domain:stackoverflow.com)",
       "WebFetch(domain:pnpm.io)",
-      "Bash(pnpm run:*)"
+      "Bash(pnpm run:*)",
+      "Bash(npx vitest run:*)"
     ],
     "deny": []
   }

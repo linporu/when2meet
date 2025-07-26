@@ -119,19 +119,38 @@ export class FormValidator {
     }
 
     /**
-     * Validate time range (start time must be before end time)
+     * Validate time range (both times required, start time must be before end time)
      */
     static validateTimeRange(startTimeInput, endTimeInput) {
-        const startTime = startTimeInput.value;
-        const endTime = endTimeInput.value;
+        const startTime = startTimeInput.value.trim();
+        const endTime = endTimeInput.value.trim();
 
-        if (startTime && endTime && startTime >= endTime) {
+        // Clear previous errors
+        this.clearFieldError(startTimeInput);
+        this.clearFieldError(endTimeInput);
+
+        // Both times are required for a valid time range
+        if (!startTime && !endTime) {
+            this.showFieldError(startTimeInput, 'Please select both start and end times');
+            return false;
+        }
+
+        if (!startTime) {
+            this.showFieldError(startTimeInput, 'Please select start time');
+            return false;
+        }
+
+        if (!endTime) {
+            this.showFieldError(endTimeInput, 'Please select end time');
+            return false;
+        }
+
+        // Validate time logic - start must be before end
+        if (startTime >= endTime) {
             this.showFieldError(endTimeInput, 'End time must be later than start time');
             return false;
         }
 
-        this.clearFieldError(startTimeInput);
-        this.clearFieldError(endTimeInput);
         return true;
     }
 
@@ -219,5 +238,67 @@ export class FormValidator {
         }
 
         return true;
+    }
+
+    /**
+     * General showError method (alias for showFieldError)
+     */
+    static showError(element, message) {
+        if (element.classList.contains('time-range-selector')) {
+            this.showTimeRangeError(element, message);
+        } else {
+            this.showFieldError(element, message);
+        }
+    }
+
+    /**
+     * General clearError method (alias for clearFieldError)
+     */
+    static clearError(element) {
+        if (element.classList.contains('time-range-selector')) {
+            this.clearTimeRangeError(element);
+        } else {
+            this.clearFieldError(element);
+        }
+    }
+
+    /**
+     * Validate entire form with validation rules
+     */
+    static validateForm(form, rules = {}) {
+        let isValid = true;
+        const formData = new FormData(form);
+
+        // Clear all previous errors
+        form.querySelectorAll('.border-red-500').forEach(el => {
+            el.classList.remove('border-red-500');
+        });
+        form.querySelectorAll('[id$="_error"]').forEach(el => {
+            el.remove();
+        });
+
+        // Validate each field based on rules
+        for (const [fieldName, fieldRules] of Object.entries(rules)) {
+            const input = form.querySelector(`[name="${fieldName}"]`);
+            if (!input) {continue;}
+
+            for (const rule of fieldRules) {
+                if (rule === 'required' && !this.validateRequired(input, fieldName)) {
+                    isValid = false;
+                    break;
+                }
+                // Add more rule types as needed
+            }
+        }
+
+        // Validate time range selectors
+        const timeRangeSelectors = form.querySelectorAll('.time-range-selector');
+        timeRangeSelectors.forEach(selector => {
+            if (!this.validateTimeRangeSelector(selector)) {
+                isValid = false;
+            }
+        });
+
+        return isValid;
     }
 }

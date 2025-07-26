@@ -40,6 +40,11 @@ export class TimezoneConverter {
      */
     convertUtcToLocal(utcTimeString) {
         return ErrorHandler.safeExecute(() => {
+            // Return empty string for invalid/empty input
+            if (!utcTimeString || utcTimeString.trim() === '') {
+                return '';
+            }
+
             // Normalize the time string to ensure it's in HH:MM:SS format
             const normalizedTime = this.normalizeTimeString(utcTimeString);
 
@@ -52,7 +57,7 @@ export class TimezoneConverter {
                 hour: '2-digit',
                 minute: '2-digit'
             });
-        }, 'UTC to Local Conversion', utcTimeString);
+        }, 'UTC to Local Conversion', '');
     }
 
     /**
@@ -62,6 +67,11 @@ export class TimezoneConverter {
      */
     convertLocalToUtc(localTimeString) {
         return ErrorHandler.safeExecute(() => {
+            // Return empty string for invalid/empty input
+            if (!localTimeString || localTimeString.trim() === '') {
+                return '';
+            }
+
             const normalized = this.normalizeTimeString(localTimeString);
 
             // Create a proper local date object
@@ -69,11 +79,12 @@ export class TimezoneConverter {
             const localDate = new Date();
             localDate.setHours(hours, minutes, 0, 0);
 
-            // Convert to UTC and format as HH:MM
+            // Convert to UTC and format as HH:MM:SS
             const utcHours = localDate.getUTCHours().toString().padStart(2, '0');
             const utcMinutes = localDate.getUTCMinutes().toString().padStart(2, '0');
-            return `${utcHours}:${utcMinutes}`;
-        }, 'Local to UTC Conversion', localTimeString);
+            const utcSeconds = localDate.getUTCSeconds().toString().padStart(2, '0');
+            return `${utcHours}:${utcMinutes}:${utcSeconds}`;
+        }, 'Local to UTC Conversion', '');
     }
 
     /**
