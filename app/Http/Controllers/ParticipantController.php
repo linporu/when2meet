@@ -77,8 +77,8 @@ class ParticipantController extends Controller
             ->map(function ($availabilities) {
                 return $availabilities->map(function ($availability) {
                     return [
-                        'start_time' => Carbon::parse($availability->start_time)->format('H:i'),
-                        'end_time' => Carbon::parse($availability->end_time)->format('H:i'),
+                        'start_time' => $availability->start_time,
+                        'end_time' => $availability->end_time,
                     ];
                 })->toArray();
             })

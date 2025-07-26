@@ -166,41 +166,53 @@ export class AvailabilityForm {
      */
     initFormSubmission() {
         this.form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            
             if (!this.validateAvailabilityForm()) {
-                e.preventDefault();
                 return;
             }
             
-            // Convert local times back to UTC before submission
-            this.convertFormTimesToUtc();
+            // Convert local times to UTC using hidden fields
+            const timeSelects = this.form.querySelectorAll(".time-select");
+            
+            timeSelects.forEach(select => {
+                if (select.value) {
+                    const utcTime = this.convertLocalToUtc(select.value);
+                    
+                    // Create hidden field with UTC time
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = select.name; // Same name as select
+                    hiddenInput.value = utcTime;
+                    this.form.appendChild(hiddenInput);
+                    
+                    // Clear original select name to avoid duplicate submission
+                    select.name = '';
+                }
+            });
+            
+            // Submit the form normally (maintains Laravel flow)
+            this.form.submit();
         });
     }
 
-    /**
-     * Convert form local times back to UTC before submission
-     */
-    convertFormTimesToUtc() {
-        const timeSelects = this.form.querySelectorAll(".time-select");
-        
-        timeSelects.forEach(select => {
-            if (select.value) {
-                // Convert local time back to UTC for backend processing
-                const utcTime = this.convertLocalToUtc(select.value);
-                select.value = utcTime;
-            }
-        });
-    }
 
     /**
      * Convert local time back to UTC
      */
     convertLocalToUtc(localTimeString) {
         try {
-            // Create a date object with the local time
-            const localDate = new Date(`1970-01-01T${this.timezoneConverter.normalizeTimeString(localTimeString)}`);
+            const normalized = this.timezoneConverter.normalizeTimeString(localTimeString);
+            
+            // Create a proper local date object
+            const [hours, minutes] = normalized.split(':').map(Number);
+            const localDate = new Date();
+            localDate.setHours(hours, minutes, 0, 0);
             
             // Convert to UTC and format as HH:MM
-            return localDate.toISOString().substring(11, 16);
+            const utcHours = localDate.getUTCHours().toString().padStart(2, '0');
+            const utcMinutes = localDate.getUTCMinutes().toString().padStart(2, '0');
+            return `${utcHours}:${utcMinutes}`;
         } catch (error) {
             console.error("Local to UTC conversion failed:", error, localTimeString);
             return localTimeString; // Return original time as fallback
