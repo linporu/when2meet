@@ -24,7 +24,15 @@
       "Bash(brew services:*)",
       "WebFetch(domain:github.com)",
       "Bash(gh run list:*)",
-      "Bash(composer test:*)"
+      "Bash(composer test:*)",
+      "Bash(pnpm add:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm run test:*)",
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:pnpm.io)",
+      "Bash(pnpm run:*)"
     ],
     "deny": []
   }

@@ -4,17 +4,37 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "test": "vitest run --reporter=default --reporter.summary=false --silent",
+        "fix": "eslint resources/js tests/frontend --fix",
+        "lint": "eslint resources/js tests/frontend --quiet",
+        "lint-verbose": "eslint resources/js tests/frontend",
+        "code": "pnpm run fix && pnpm run lint",
+        "test:ui": "vitest --ui",
+        "test:coverage": "vitest --coverage",
+        "test:watch": "vitest"
     },
     "devDependencies": {
+        "@eslint/js": "^9.32.0",
         "@tailwindcss/vite": "^4.0.0",
+        "@vitest/ui": "^3.2.4",
         "axios": "^1.8.2",
         "concurrently": "^9.0.1",
+        "eslint": "^9.32.0",
+        "happy-dom": "^18.0.1",
+        "jsdom": "^26.1.0",
         "laravel-vite-plugin": "^1.2.0",
         "prettier": "^3.6.2",
         "prettier-plugin-blade": "^2.1.21",
         "prettier-plugin-tailwindcss": "^0.6.14",
         "tailwindcss": "^4.0.0",
-        "vite": "^6.2.4"
+        "vite": "^6.2.4",
+        "vitest": "^3.2.4"
+    },
+    "pnpm": {
+        "allowed-build-scripts": [
+            "@tailwindcss/oxide",
+            "esbuild"
+        ]
     }
 }
