@@ -14,8 +14,12 @@ describe('UpdateAvailabilityRequest Validation', function () {
 
             // Create a mock request with proper route parameters
             $request = \Mockery::mock(UpdateAvailabilityRequest::class)->makePartial();
-            $request->shouldReceive('route')->with('event')->andReturn($event);
-            $request->shouldReceive('route')->with('participant')->andReturn($participant);
+            $request->shouldReceive('route')
+                ->with('event')
+                ->andReturn($event);
+            $request->shouldReceive('route')
+                ->with('participant')
+                ->andReturn($participant);
 
             // Act & Assert
             expect($request->authorize())->toBeTrue();
@@ -29,8 +33,12 @@ describe('UpdateAvailabilityRequest Validation', function () {
 
             // Create a mock request with participant from different event
             $request = \Mockery::mock(UpdateAvailabilityRequest::class)->makePartial();
-            $request->shouldReceive('route')->with('event')->andReturn($event1);
-            $request->shouldReceive('route')->with('participant')->andReturn($participant);
+            $request->shouldReceive('route')
+                ->with('event')
+                ->andReturn($event1);
+            $request->shouldReceive('route')
+                ->with('participant')
+                ->andReturn($participant);
 
             // Act & Assert
             expect($request->authorize())->toBeFalse();
