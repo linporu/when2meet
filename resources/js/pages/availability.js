@@ -30,7 +30,6 @@ export class AvailabilityForm {
             // Initialize form submission handling
             this.initFormSubmission();
 
-            console.log('Availability form initialized with modular components');
         }, 'Availability Form Initialization');
     }
 

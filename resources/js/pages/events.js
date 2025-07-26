@@ -26,14 +26,13 @@ function initEventForm() {
     ErrorHandler.safeExecute(() => {
         setupFormValidation(form);
         setupFormSubmission(form);
-        console.log('Event form initialized');
     }, 'Event Form Initialization');
 }
 
 /**
  * Setup form validation with real-time feedback
  */
-function setupFormValidation(form) {
+function setupFormValidation() {
     const nameInput = DOMHelpers.querySelector('#event_name');
     const dateInput = DOMHelpers.querySelector('#date');
     const startTimeInput = DOMHelpers.querySelector('#start_time');
@@ -129,7 +128,6 @@ function initTimezoneDisplay() {
         // Initialize page timezone conversion
         converter.initializePageTimezone();
 
-        console.log(`Initialized ${timezoneElements.length} timezone display elements`);
     }, 'Timezone Display Initialization');
 }
 

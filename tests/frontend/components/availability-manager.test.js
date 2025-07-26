@@ -315,7 +315,6 @@ describe('AvailabilityManager', () => {
 
     describe('convertAllToUtc', () => {
         it('should convert all local times to UTC', async () => {
-            const { TimezoneConverter } = await import('../../../resources/js/components/timezone-converter.js');
             const mockConverter = manager.timezoneConverter;
             mockConverter.convertLocalToUtc.mockReturnValue('01:00:00');
 
@@ -368,8 +367,6 @@ describe('AvailabilityManager', () => {
         });
 
         it('should remove all selectors except first one', () => {
-            const initialCount = manager.timeRangeSelectors.length;
-
             manager.resetToOne();
 
             expect(manager.timeRangeSelectors).toHaveLength(1);

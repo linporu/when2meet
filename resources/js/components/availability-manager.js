@@ -5,7 +5,6 @@
 
 import { TimeRangeSelector } from './time-range-selector.js';
 import { TimezoneConverter } from './timezone-converter.js';
-import { FormValidator } from '../utils/form-validator.js';
 import { DOMHelpers } from '../utils/dom-helpers.js';
 import { ErrorHandler } from '../utils/error-handler.js';
 
@@ -114,7 +113,7 @@ export class AvailabilityManager {
                 endTime
             );
 
-            const element = selector.render(this.container);
+            selector.render(this.container);
             this.timeRangeSelectors.push(selector);
 
             return selector;

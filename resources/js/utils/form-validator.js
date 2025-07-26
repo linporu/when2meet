@@ -267,7 +267,6 @@ export class FormValidator {
      */
     static validateForm(form, rules = {}) {
         let isValid = true;
-        const formData = new FormData(form);
 
         // Clear all previous errors
         form.querySelectorAll('.border-red-500').forEach(el => {

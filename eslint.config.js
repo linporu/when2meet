@@ -22,6 +22,7 @@ export default [
         getComputedStyle: 'readonly',
         require: 'readonly',
         Intl: 'readonly',
+        FormData: 'readonly',
         
         // Vitest globals
         describe: 'readonly',
@@ -47,6 +48,16 @@ export default [
       'indent': ['error', 4],
       'no-trailing-spaces': 'error',
       'comma-dangle': ['error', 'never']
+    }
+  },
+  {
+    // Allow console statements in error handling utilities and their tests
+    files: [
+      'resources/js/utils/error-handler.js',
+      'tests/frontend/**/*.test.js'
+    ],
+    rules: {
+      'no-console': 'off'
     }
   },
   {

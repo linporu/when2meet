@@ -123,7 +123,7 @@ export class TimezoneConverter {
             }
 
             const convertedOptions = {};
-            for (const [utcTime, displayText] of Object.entries(timeOptions)) {
+            for (const [utcTime] of Object.entries(timeOptions)) {
                 const localTime = this.convertUtcToLocal(utcTime);
                 // Create a more readable format for local time display
                 const localDisplayTime = new Date(`1970-01-01T${this.normalizeTimeString(utcTime)}Z`)
@@ -166,7 +166,6 @@ export class TimezoneConverter {
                 }
             });
 
-            console.log(`Initialized ${timezoneElements.length} timezone display elements`);
         }, 'Page Timezone Initialization', false);
     }
 
