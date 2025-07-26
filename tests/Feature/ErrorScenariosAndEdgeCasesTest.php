@@ -4,7 +4,7 @@ use App\Models\Event;
 use App\Models\EventParticipant;
 use App\Models\EventTimeSlot;
 
-describe('Error Scenarios and Edge Cases - Test God Level', function () {
+describe('Error Scenarios and Edge Cases', function () {
     describe('Invalid Hash Handling (Security Focus)', function () {
         it('returns 404 for non-existent event hash', function () {
             $nonExistentHash = 'InvalidHash123';
