@@ -5,6 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $event_id
+ * @property int $participant_id
+ * @property \Illuminate\Support\Carbon $date
+ * @property string $start_time
+ * @property string $end_time
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read \App\Models\Event $event
+ * @property-read \App\Models\EventParticipant $participant
+ */
 class ParticipantAvailability extends Model
 {
     use HasFactory;

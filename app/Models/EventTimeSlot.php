@@ -5,6 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property int $event_id
+ * @property \Illuminate\Support\Carbon $date
+ * @property string $start_time
+ * @property string $end_time
+ * @property-read \App\Models\Event $event
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ParticipantAvailability> $participantAvailabilities
+ */
 class EventTimeSlot extends Model
 {
     use HasFactory;

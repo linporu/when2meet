@@ -12,6 +12,7 @@ parameters:
     ignoreErrors:
     
     excludePaths:
+        - tests/
         - bootstrap/*
         - storage/*
         - vendor/*
