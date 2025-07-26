@@ -5,7 +5,7 @@ use App\Models\Event;
 use App\Models\EventParticipant;
 use Illuminate\Support\Facades\Validator;
 
-describe('UpdateAvailabilityRequest Validation - Test God Level', function () {
+describe('UpdateAvailabilityRequest Validation', function () {
     describe('Authorization Logic (Cross-Event Access Prevention)', function () {
         it('authorizes participant access within same event', function () {
             // Arrange

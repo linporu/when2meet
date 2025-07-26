@@ -3,7 +3,7 @@
 use App\Http\Requests\StoreEventRequest;
 use Illuminate\Support\Facades\Validator;
 
-describe('StoreEventRequest Validation - Test God Level', function () {
+describe('StoreEventRequest Validation', function () {
     describe('Required Fields Validation (Core Business Logic)', function () {
         it('validates all required fields are present', function () {
             $rules = (new StoreEventRequest)->rules();

@@ -4,7 +4,7 @@ use App\Models\Event;
 use App\Models\EventParticipant;
 use App\Models\EventTimeSlot;
 
-describe('Participant Security Tests - Test God Level', function () {
+describe('Participant Security Tests', function () {
     describe('Cross-Event Access Prevention (Critical Security)', function () {
         it('prevents participant from accessing different event availability edit', function () {
             // Arrange: Create two separate events
