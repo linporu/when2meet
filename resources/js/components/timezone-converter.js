@@ -79,11 +79,10 @@ export class TimezoneConverter {
             const localDate = new Date();
             localDate.setHours(hours, minutes, 0, 0);
 
-            // Convert to UTC and format as HH:MM:SS
+            // Convert to UTC and format as HH:MM (backend expects this format)
             const utcHours = localDate.getUTCHours().toString().padStart(2, '0');
             const utcMinutes = localDate.getUTCMinutes().toString().padStart(2, '0');
-            const utcSeconds = localDate.getUTCSeconds().toString().padStart(2, '0');
-            return `${utcHours}:${utcMinutes}:${utcSeconds}`;
+            return `${utcHours}:${utcMinutes}`;
         }, 'Local to UTC Conversion', '');
     }
 

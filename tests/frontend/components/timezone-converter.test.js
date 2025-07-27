@@ -93,8 +93,8 @@ describe('TimezoneConverter', () => {
 
             const result = testConverter.convertLocalToUtc('17:00');
 
-            // Should return a valid UTC time string
-            expect(result).toMatch(/^\d{2}:\d{2}:\d{2}$/);
+            // Should return a valid UTC time string in HH:MM format
+            expect(result).toMatch(/^\d{2}:\d{2}$/);
         });
 
         it('should handle edge cases around midnight', () => {
@@ -102,8 +102,8 @@ describe('TimezoneConverter', () => {
 
             const result = testConverter.convertLocalToUtc('02:00');
 
-            // Should return a valid UTC time string
-            expect(result).toMatch(/^\d{2}:\d{2}:\d{2}$/);
+            // Should return a valid UTC time string in HH:MM format
+            expect(result).toMatch(/^\d{2}:\d{2}$/);
         });
 
         it('should return empty string for invalid input', () => {
@@ -122,7 +122,7 @@ describe('TimezoneConverter', () => {
 
             const result = testConverter.convertLocalToUtc('14:30');
 
-            expect(result).toMatch(/^\d{2}:\d{2}:\d{2}$/);
+            expect(result).toMatch(/^\d{2}:\d{2}$/);
         });
     });
 
