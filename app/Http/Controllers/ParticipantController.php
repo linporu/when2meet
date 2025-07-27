@@ -13,7 +13,8 @@ class ParticipantController extends Controller
 {
     public function __construct(
         private GroupAvailabilityService $groupAvailabilityService
-    ) {}
+    ) {
+    }
 
     /**
      * Set participant name and redirect to availability editing.
@@ -53,23 +54,25 @@ class ParticipantController extends Controller
                 ->with('error', 'Invalid participant access. Please enter your name to continue.');
         }
 
-        return $this->showEditForm($event, $participant);
+        // Prepare edit form data
+        $formData = $this->prepareEditFormData($event, $participant);
+
+        // Calculate group availability for visualization
+        $groupAvailability = $this->groupAvailabilityService->calculateGroupAvailability($event);
+
+        return view('participant-edit', [
+            'event' => $event,
+            'participant' => $participant,
+            'existingAvailability' => $formData['existingAvailability'],
+            'timeOptions' => $formData['timeOptions'],
+            'groupAvailability' => $groupAvailability,
+        ]);
     }
 
     /**
-     * Update participant availability.
+     * Prepare edit form data for participant availability editing.
      */
-    public function update(UpdateAvailabilityRequest $request, Event $event, EventParticipant $participant)
-    {
-        $availabilityData = $request->getFormattedAvailability();
-
-        return $this->saveAvailability($availabilityData, $event, $participant);
-    }
-
-    /**
-     * Show the edit form with current availability data.
-     */
-    private function showEditForm(Event $event, EventParticipant $participant)
+    private function prepareEditFormData(Event $event, EventParticipant $participant): array
     {
         $event->load('timeSlots');
 
@@ -99,10 +102,10 @@ class ParticipantController extends Controller
             );
         }
 
-        // Calculate group availability for visualization
-        $groupAvailability = $this->groupAvailabilityService->calculateGroupAvailability($event);
-
-        return view('participant-edit', compact('event', 'participant', 'existingAvailability', 'timeOptions', 'groupAvailability'));
+        return [
+            'existingAvailability' => $existingAvailability,
+            'timeOptions' => $timeOptions,
+        ];
     }
 
     /**
@@ -126,6 +129,16 @@ class ParticipantController extends Controller
     }
 
     /**
+     * Update participant availability.
+     */
+    public function update(UpdateAvailabilityRequest $request, Event $event, EventParticipant $participant)
+    {
+        $availabilityData = $request->getFormattedAvailability();
+
+        return $this->saveAvailability($availabilityData, $event, $participant);
+    }
+
+    /**
      * Save participant availability and re-render the form.
      */
     private function saveAvailability(array $availabilityData, Event $event, EventParticipant $participant)
@@ -145,7 +158,7 @@ class ParticipantController extends Controller
         }
 
         // Re-render the form with fresh data and success message
-        return $this->showEditForm($event, $participant)
+        return $this->show($event, $participant)
             ->with('success', 'Your availability has been saved successfully!');
     }
 }
