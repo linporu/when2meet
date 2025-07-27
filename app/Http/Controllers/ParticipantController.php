@@ -6,10 +6,15 @@ use App\Http\Requests\UpdateAvailabilityRequest;
 use App\Models\Event;
 use App\Models\EventParticipant;
 use App\Models\ParticipantAvailability;
+use App\Services\GroupAvailabilityService;
 use Carbon\Carbon;
 
 class ParticipantController extends Controller
 {
+    public function __construct(
+        private GroupAvailabilityService $groupAvailabilityService
+    ) {}
+
     /**
      * Set participant name and redirect to availability editing.
      */
@@ -94,7 +99,10 @@ class ParticipantController extends Controller
             );
         }
 
-        return view('participant-edit', compact('event', 'participant', 'existingAvailability', 'timeOptions'));
+        // Calculate group availability for visualization
+        $groupAvailability = $this->groupAvailabilityService->calculateGroupAvailability($event);
+
+        return view('participant-edit', compact('event', 'participant', 'existingAvailability', 'timeOptions', 'groupAvailability'));
     }
 
     /**

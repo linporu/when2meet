@@ -12,5 +12,7 @@
             :participant="$participant" 
             :existing-availability="$existingAvailability" 
         />
+
+        <x-group-availability :groupAvailability="$groupAvailability ?? []" />
     </x-card>
 </x-layout>

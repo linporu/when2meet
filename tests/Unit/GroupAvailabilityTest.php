@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\EventController;
 use App\Models\Event;
 use App\Models\EventParticipant;
 use App\Models\EventTimeSlot;
 use App\Models\ParticipantAvailability;
+use App\Services\GroupAvailabilityService;
 use Carbon\Carbon;
 
 test('it calculates group availability correctly', function () {
@@ -46,16 +46,11 @@ test('it calculates group availability correctly', function () {
         'end_time' => '11:00:00',
     ]);
 
-    // Get group availability through controller
-    $controller = new EventController;
+    // Get group availability through service
+    $service = new GroupAvailabilityService;
     $event->load('timeSlots', 'participants.participantAvailabilities');
 
-    // Use reflection to access private method
-    $reflection = new ReflectionClass($controller);
-    $method = $reflection->getMethod('calculateGroupAvailability');
-    $method->setAccessible(true);
-
-    $groupAvailability = $method->invoke($controller, $event);
+    $groupAvailability = $service->calculateGroupAvailability($event);
 
     expect($groupAvailability)->toBeArray();
     expect(count($groupAvailability))->toBeGreaterThan(0);
@@ -76,12 +71,12 @@ test('it calculates group availability correctly', function () {
 });
 
 test('it generates 30-minute time slots correctly', function () {
-    $controller = new EventController;
-    $reflection = new ReflectionClass($controller);
+    $service = new GroupAvailabilityService;
+    $reflection = new ReflectionClass($service);
     $method = $reflection->getMethod('generateTimeSlots');
     $method->setAccessible(true);
 
-    $slots = $method->invoke($controller, '09:00:00', '11:00:00');
+    $slots = $method->invoke($service, '09:00:00', '11:00:00');
 
     expect($slots)->toBeArray();
     expect(count($slots))->toBe(4); // 09:00-09:30, 09:30-10:00, 10:00-10:30, 10:30-11:00
@@ -93,37 +88,37 @@ test('it generates 30-minute time slots correctly', function () {
 });
 
 test('it checks time slot overlaps correctly', function () {
-    $controller = new EventController;
-    $reflection = new ReflectionClass($controller);
+    $service = new GroupAvailabilityService;
+    $reflection = new ReflectionClass($service);
     $method = $reflection->getMethod('timeSlotOverlaps');
     $method->setAccessible(true);
 
     // Test case 1: Availability covers the entire slot
-    $result = $method->invoke($controller, '09:00:00', '10:00:00', '09:00', '09:30');
+    $result = $method->invoke($service, '09:00:00', '10:00:00', '09:00', '09:30');
     expect($result)->toBeTrue();
 
     // Test case 2: Availability doesn't cover the slot completely
-    $result = $method->invoke($controller, '09:30:00', '10:00:00', '09:00', '09:30');
+    $result = $method->invoke($service, '09:30:00', '10:00:00', '09:00', '09:30');
     expect($result)->toBeFalse();
 
     // Test case 3: Slot extends beyond availability
-    $result = $method->invoke($controller, '09:00:00', '09:15:00', '09:00', '09:30');
+    $result = $method->invoke($service, '09:00:00', '09:15:00', '09:00', '09:30');
     expect($result)->toBeFalse();
 });
 
 test('it handles time format parsing correctly', function () {
-    $controller = new EventController;
-    $reflection = new ReflectionClass($controller);
+    $service = new GroupAvailabilityService;
+    $reflection = new ReflectionClass($service);
     $method = $reflection->getMethod('parseTimeString');
     $method->setAccessible(true);
 
     // Test H:i:s format
-    $result = $method->invoke($controller, '09:30:00');
+    $result = $method->invoke($service, '09:30:00');
     expect($result)->toBeInstanceOf(Carbon::class);
     expect($result->format('H:i'))->toBe('09:30');
 
     // Test H:i format
-    $result = $method->invoke($controller, '09:30');
+    $result = $method->invoke($service, '09:30');
     expect($result)->toBeInstanceOf(Carbon::class);
     expect($result->format('H:i'))->toBe('09:30');
 });
@@ -157,14 +152,10 @@ test('it calculates availability percentage correctly', function () {
         'end_time' => '10:00:00',
     ]);
 
-    $controller = new EventController;
+    $service = new GroupAvailabilityService;
     $event->load('timeSlots', 'participants.participantAvailabilities');
 
-    $reflection = new ReflectionClass($controller);
-    $method = $reflection->getMethod('calculateGroupAvailability');
-    $method->setAccessible(true);
-
-    $groupAvailability = $method->invoke($controller, $event);
+    $groupAvailability = $service->calculateGroupAvailability($event);
 
     $firstSlot = collect($groupAvailability)->first();
     expect($firstSlot['available_count'])->toBe(2);
