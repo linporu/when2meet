@@ -20,9 +20,15 @@
             </div>
             <div class="ml-3">
                 <p class="text-sm font-medium text-green-800">
-                    Recommended: {{ $bestSlot["start_time"] }} -
-                    {{ $bestSlot["end_time"] }} on
-                    {{ \Carbon\Carbon::parse($bestSlot["date"])->format("M j, Y") }}
+                    Recommended: 
+                    <span 
+                        class="timezone-display"
+                        data-utc-start="{{ $bestSlot["start_time"] }}"
+                        data-utc-end="{{ $bestSlot["end_time"] }}"
+                    >
+                        Loading time...
+                    </span>
+                    on {{ \Carbon\Carbon::parse($bestSlot["date"])->format("M j, Y") }}
                 </p>
                 <p class="text-xs text-green-600">
                     {{ $bestSlot["available_count"] }} out of

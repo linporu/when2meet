@@ -13,8 +13,7 @@ class ParticipantController extends Controller
 {
     public function __construct(
         private GroupAvailabilityService $groupAvailabilityService
-    ) {
-    }
+    ) {}
 
     /**
      * Set participant name and redirect to availability editing.

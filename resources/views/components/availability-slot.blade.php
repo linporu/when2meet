@@ -3,8 +3,12 @@
 <div class="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm hover:shadow-md transition-shadow">
     {{-- Time Range --}}
     <div class="flex flex-col">
-        <span class="font-medium text-gray-900">
-            {{ $availabilitySlot['start_time'] }} - {{ $availabilitySlot['end_time'] }}
+        <span 
+            class="font-medium text-gray-900 timezone-display"
+            data-utc-start="{{ $availabilitySlot['start_time'] }}"
+            data-utc-end="{{ $availabilitySlot['end_time'] }}"
+        >
+            Loading time...
         </span>
         <span class="text-sm text-gray-500">
             {{ \Carbon\Carbon::parse($availabilitySlot['date'])->format('M j, Y') }}
