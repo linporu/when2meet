@@ -36,6 +36,10 @@
         "allowed-build-scripts": [
             "@tailwindcss/oxide",
             "esbuild"
+        ],
+        "onlyBuiltDependencies": [
+            "@tailwindcss/oxide",
+            "esbuild"
         ]
     }
 }

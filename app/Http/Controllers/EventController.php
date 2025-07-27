@@ -5,10 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEventRequest;
 use App\Models\Event;
 use App\Models\EventTimeSlot;
+use App\Services\GroupAvailabilityService;
 use Carbon\Carbon;
 
 class EventController extends Controller
 {
+    public function __construct(
+        private GroupAvailabilityService $groupAvailabilityService
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -63,8 +68,11 @@ class EventController extends Controller
      */
     public function show(Event $event)
     {
-        $event->load('timeSlots');
+        $event->load('timeSlots', 'participants.participantAvailabilities');
 
-        return view('event-show', compact('event'));
+        // Calculate group availability for visualization
+        $groupAvailability = $this->groupAvailabilityService->calculateGroupAvailability($event);
+
+        return view('event-show', compact('event', 'groupAvailability'));
     }
 }
