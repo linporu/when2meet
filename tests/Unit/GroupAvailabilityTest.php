@@ -162,3 +162,27 @@ test('it calculates availability percentage correctly', function () {
     expect($firstSlot['total_participants'])->toBe(3);
     expect($firstSlot['availability_percentage'])->toBe(67.0); // 2/3 * 100 = 66.67, rounded to 67
 });
+
+test('it handles edge cases correctly', function () {
+    // Test with no participants
+    $event = Event::factory()->create();
+    EventTimeSlot::factory()->create([
+        'event_id' => $event->id,
+        'date' => '2025-08-01',
+        'start_time' => '09:00:00',
+        'end_time' => '10:00:00',
+    ]);
+
+    $service = new GroupAvailabilityService;
+    $event->load('timeSlots', 'participants.participantAvailabilities');
+
+    $groupAvailability = $service->calculateGroupAvailability($event);
+
+    expect($groupAvailability)->toBeArray();
+    expect(count($groupAvailability))->toBeGreaterThan(0);
+
+    $firstSlot = collect($groupAvailability)->first();
+    expect($firstSlot['available_count'])->toBe(0);
+    expect($firstSlot['total_participants'])->toBe(0);
+    expect($firstSlot['availability_percentage'])->toBe(0);
+});
