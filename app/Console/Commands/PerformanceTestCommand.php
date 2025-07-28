@@ -79,10 +79,10 @@ class PerformanceTestCommand extends Command
     private function getScenarioConfig(string $scenario): array
     {
         return match ($scenario) {
-            'small' => ['participants' => 3, 'days' => 2, 'hours_per_day' => 8],
-            'medium' => ['participants' => 20, 'days' => 5, 'hours_per_day' => 10],
-            'large' => ['participants' => 50, 'days' => 7, 'hours_per_day' => 12],
-            default => ['participants' => 3, 'days' => 2, 'hours_per_day' => 8], // Default to small
+            'small' => ['participants' => 5, 'days' => 3, 'hours_per_day' => 8],
+            'medium' => ['participants' => 50, 'days' => 5, 'hours_per_day' => 10],
+            'large' => ['participants' => 500, 'days' => 7, 'hours_per_day' => 12],
+            default => ['participants' => 5, 'days' => 3, 'hours_per_day' => 8], // Default to small
         };
     }
 

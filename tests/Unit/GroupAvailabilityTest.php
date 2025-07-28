@@ -87,23 +87,39 @@ test('it generates 30-minute time slots correctly', function () {
     expect($slots[3])->toBe(['start_time' => '10:30', 'end_time' => '11:00']);
 });
 
-test('it checks time slot overlaps correctly', function () {
+test('it generates slots from availability correctly', function () {
     $service = new GroupAvailabilityService;
     $reflection = new ReflectionClass($service);
-    $method = $reflection->getMethod('timeSlotOverlaps');
+    $method = $reflection->getMethod('generateSlotsFromAvailability');
     $method->setAccessible(true);
 
-    // Test case 1: Availability covers the entire slot
-    $result = $method->invoke($service, '09:00:00', '10:00:00', '09:00', '09:30');
-    expect($result)->toBeTrue();
+    // Test case 1: Availability covers multiple slots
+    $availabilityRow = [
+        'date' => '2025-08-01',
+        'avail_start_time' => '09:00:00',
+        'avail_end_time' => '10:30:00',
+        'participant_name' => 'Alice',
+    ];
 
-    // Test case 2: Availability doesn't cover the slot completely
-    $result = $method->invoke($service, '09:30:00', '10:00:00', '09:00', '09:30');
-    expect($result)->toBeFalse();
+    $slots = $method->invoke($service, $availabilityRow);
+    expect($slots)->toBeArray();
+    expect(count($slots))->toBe(3); // 09:00-09:30, 09:30-10:00, 10:00-10:30
 
-    // Test case 3: Slot extends beyond availability
-    $result = $method->invoke($service, '09:00:00', '09:15:00', '09:00', '09:30');
-    expect($result)->toBeFalse();
+    expect($slots[0]['key'])->toBe('2025-08-01_09:00_09:30');
+    expect($slots[1]['key'])->toBe('2025-08-01_09:30_10:00');
+    expect($slots[2]['key'])->toBe('2025-08-01_10:00_10:30');
+
+    // Test case 2: Empty availability
+    $emptyRow = [
+        'date' => '2025-08-01',
+        'avail_start_time' => '',
+        'avail_end_time' => '',
+        'participant_name' => 'Bob',
+    ];
+
+    $emptySlots = $method->invoke($service, $emptyRow);
+    expect($emptySlots)->toBeArray();
+    expect(count($emptySlots))->toBe(0);
 });
 
 test('it handles time format parsing correctly', function () {
