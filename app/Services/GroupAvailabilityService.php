@@ -9,28 +9,38 @@ class GroupAvailabilityService
 {
     /**
      * Calculate group availability for all participants in 30-minute slots.
+     * Optimized version with single JOIN query and in-memory indexes.
      */
     public function calculateGroupAvailability(Event $event): array
     {
-        $groupAvailability = [];
-        $totalParticipants = $event->participants->count();
 
-        // Generate all possible 30-minute time slots for each event date
-        foreach ($event->timeSlots as $timeSlot) {
-            $dateKey = $timeSlot->date->format('Y-m-d');
-            $timeSlots = $this->generateTimeSlots($timeSlot->start_time, $timeSlot->end_time);
+        // Step 1: Load all data in a single optimized query
+        $rawData = $event->getGroupAvailabilityData();
+
+        // Step 2: Build in-memory indexes for fast lookups
+        $indexes = $this->buildIndexes($rawData);
+
+        // Step 3: Generate group availability data
+        $groupAvailability = [];
+        $totalParticipants = count($indexes['participants']);
+
+        foreach ($indexes['timeSlots'] as $timeSlotData) {
+            $timeSlots = $this->generateTimeSlots(
+                $timeSlotData['start_time'],
+                $timeSlotData['end_time']
+            );
 
             foreach ($timeSlots as $slot) {
-                // Count participants available for this specific time slot
+                // Use optimized participant lookup
                 $availableParticipants = $this->getAvailableParticipants(
-                    $event,
-                    $dateKey,
+                    $timeSlotData['date'],
                     $slot['start_time'],
-                    $slot['end_time']
+                    $slot['end_time'],
+                    $indexes
                 );
 
                 $groupAvailability[] = [
-                    'date' => $dateKey,
+                    'date' => $timeSlotData['date'],
                     'start_time' => $slot['start_time'],
                     'end_time' => $slot['end_time'],
                     'available_count' => count($availableParticipants),
@@ -54,6 +64,57 @@ class GroupAvailabilityService
         });
 
         return $groupAvailability;
+    }
+
+    /**
+     * Build in-memory indexes for fast lookups from raw data.
+     */
+    private function buildIndexes(array $rawData): array
+    {
+        $timeSlots = [];
+        $participants = [];
+        $participantAvailabilities = [];
+
+        foreach ($rawData as $row) {
+            $row = (array) $row;
+
+            // Build time slots index
+            $dateKey = $row['date'];
+            $slotKey = $dateKey.'_'.$row['slot_start_time'].'_'.$row['slot_end_time'];
+
+            if (! isset($timeSlots[$slotKey])) {
+                $timeSlots[$slotKey] = [
+                    'date' => $dateKey,
+                    'start_time' => $row['slot_start_time'],
+                    'end_time' => $row['slot_end_time'],
+                ];
+            }
+
+            // Build participants index (only if participant exists)
+            if (! empty($row['participant_id'])) {
+                $participantId = $row['participant_id'];
+                $participants[$participantId] = $row['participant_name'];
+
+                // Build participant availability index (only if availability exists)
+                if (! empty($row['avail_start_time']) && ! empty($row['avail_end_time'])) {
+                    $availKey = $dateKey.'_'.$participantId;
+                    if (! isset($participantAvailabilities[$availKey])) {
+                        $participantAvailabilities[$availKey] = [];
+                    }
+
+                    $participantAvailabilities[$availKey][] = [
+                        'start_time' => $row['avail_start_time'],
+                        'end_time' => $row['avail_end_time'],
+                    ];
+                }
+            }
+        }
+
+        return [
+            'timeSlots' => $timeSlots,
+            'participants' => $participants,
+            'participantAvailabilities' => $participantAvailabilities,
+        ];
     }
 
     /**
@@ -85,24 +146,32 @@ class GroupAvailabilityService
     }
 
     /**
-     * Get list of participants available for a specific time slot.
+     * Get available participants for a time slot using optimized array lookups.
      */
-    private function getAvailableParticipants(Event $event, string $date, string $startTime, string $endTime): array
+    private function getAvailableParticipants(string $date, string $startTime, string $endTime, array $indexes): array
     {
         $availableParticipants = [];
+        $participants = $indexes['participants'];
+        $participantAvailabilities = $indexes['participantAvailabilities'];
 
-        foreach ($event->participants as $participant) {
-            foreach ($participant->participantAvailabilities as $availability) {
-                // Check if this availability record matches the date and overlaps with the time slot
-                if ($availability->date->format('Y-m-d') === $date
-                    && $this->timeSlotOverlaps(
-                        $availability->start_time,
-                        $availability->end_time,
+        foreach ($participants as $participantId => $participantName) {
+            $availKey = $date.'_'.$participantId;
+
+            // Check if this participant has any availability for this date
+            if (isset($participantAvailabilities[$availKey])) {
+                $availabilities = $participantAvailabilities[$availKey];
+
+                // Check if any of their availability time ranges cover this slot
+                foreach ($availabilities as $availability) {
+                    if ($this->timeSlotOverlaps(
+                        $availability['start_time'],
+                        $availability['end_time'],
                         $startTime,
                         $endTime
                     )) {
-                    $availableParticipants[] = $participant->name;
-                    break; // Participant is available, no need to check other availability records
+                        $availableParticipants[] = $participantName;
+                        break; // Participant is available, no need to check other ranges
+                    }
                 }
             }
         }
@@ -133,7 +202,7 @@ class GroupAvailabilityService
         // Try H:i:s format first, then fall back to H:i
         try {
             return Carbon::createFromFormat('H:i:s', $timeString);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return Carbon::createFromFormat('H:i', $timeString);
         }
     }
