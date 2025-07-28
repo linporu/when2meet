@@ -9,137 +9,115 @@ class GroupAvailabilityService
 {
     /**
      * Calculate group availability for all participants in 30-minute slots.
-     * Optimized version with matrix transpose and clean algorithm structure.
+     * Returns all event time slots with participant availability data.
      */
     public function calculateGroupAvailability(Event $event): array
     {
-        // Step 1: Load all data in a single optimized query
         $rawData = $event->getGroupAvailabilityData();
 
-        // Step 2: Pre-process all event time slots and generate sorted time slots
-        $allTimeSlots = $this->preprocessTimeSlots($rawData);
-
-        // Step 3: Build matrix transpose index for O(1) participant lookups
-        $timeSlotToParticipants = $this->buildIndexes($rawData);
-
-        // Step 4: Calculate total participants from raw data
+        // Calculate total participants once
         $totalParticipants = collect($rawData)
             ->pluck('participant_id')
             ->filter()
             ->unique()
             ->count();
 
-        // Step 5: Generate group availability by iterating pre-processed slots
-        $groupAvailability = [];
-        foreach ($allTimeSlots as $timeSlot) {
-            // O(1) lookup from matrix transpose index
-            $slotKey = $timeSlot['date'].'_'.$timeSlot['start_time'].'_'.$timeSlot['end_time'];
-            $availableParticipants = $timeSlotToParticipants[$slotKey] ?? [];
-
-            $groupAvailability[] = [
-                'date' => $timeSlot['date'],
-                'start_time' => $timeSlot['start_time'],
-                'end_time' => $timeSlot['end_time'],
-                'available_count' => count($availableParticipants),
-                'total_participants' => $totalParticipants,
-                'available_participants' => $availableParticipants,
-                'availability_percentage' => $totalParticipants > 0
-                    ? round((count($availableParticipants) / $totalParticipants) * 100)
-                    : 0,
-            ];
-        }
-
-        return $groupAvailability;
-    }
-
-    /**
-     * Pre-process all event time slots and generate sorted 30-minute slots.
-     */
-    private function preprocessTimeSlots(array $rawData): array
-    {
-        $allTimeSlots = [];
-
-        // Extract unique time slot definitions from raw data
-        $uniqueTimeSlots = collect($rawData)
+        // Generate all possible time slots from event definition
+        $allTimeSlots = collect($rawData)
             ->map(fn ($row) => [
                 'date' => $row['date'],
                 'start_time' => $row['slot_start_time'],
                 'end_time' => $row['slot_end_time'],
             ])
             ->unique()
+            ->flatMap(fn ($slot) => $this->generateEventTimeSlots($slot))
+            ->keyBy('key');
+
+        // Get participant availability slots
+        $participantSlots = collect($rawData)
+            ->filter(fn ($row) => ! empty($row['participant_name']) && ! empty($row['avail_start_time']))
+            ->flatMap(fn ($row) => $this->generateParticipantSlots($row))
+            ->groupBy('key');
+
+        // Merge all time slots with participant data
+        return $allTimeSlots
+            ->map(fn ($slot) => [
+                'date' => $slot['date'],
+                'start_time' => $slot['start_time'],
+                'end_time' => $slot['end_time'],
+                'available_participants' => $participantSlots->get($slot['key'], collect())->pluck('participant')->unique()->values()->toArray(),
+                'available_count' => $participantSlots->get($slot['key'], collect())->pluck('participant')->unique()->count(),
+                'total_participants' => $totalParticipants,
+                'availability_percentage' => $totalParticipants > 0
+                    ? round(($participantSlots->get($slot['key'], collect())->pluck('participant')->unique()->count() / $totalParticipants) * 100)
+                    : 0,
+            ])
+            ->sortKeys()
+            ->values()
             ->toArray();
+    }
 
-        // Generate all 30-minute slots for each time slot definition
-        foreach ($uniqueTimeSlots as $timeSlotData) {
-            $slots = $this->generateTimeSlots(
-                $timeSlotData['start_time'],
-                $timeSlotData['end_time']
-            );
-
-            foreach ($slots as $slot) {
-                $allTimeSlots[] = [
-                    'date' => $timeSlotData['date'],
-                    'start_time' => $slot['start_time'],
-                    'end_time' => $slot['end_time'],
-                ];
-            }
+    /**
+     * Generate participant slot data with unique keys for a single availability record.
+     */
+    private function generateParticipantSlots(array $availabilityRow): array
+    {
+        if (empty($availabilityRow['avail_start_time']) || empty($availabilityRow['avail_end_time'])) {
+            return [];
         }
 
-        // Sort by date and time
-        usort($allTimeSlots, function ($a, $b) {
-            $dateComparison = strcmp($a['date'], $b['date']);
-            if ($dateComparison === 0) {
-                return strcmp($a['start_time'], $b['start_time']);
+        $date = $availabilityRow['date'];
+        $participant = $availabilityRow['participant_name'];
+        $availStart = $this->parseTimeString($availabilityRow['avail_start_time']);
+        $availEnd = $this->parseTimeString($availabilityRow['avail_end_time']);
+
+        $slots = [];
+        $current = $availStart->copy();
+        $interval = 30;
+
+        while ($current->lt($availEnd)) {
+            $slotStart = $current->format('H:i');
+            $slotEnd = $current->copy()->addMinutes($interval)->format('H:i');
+
+            if ($current->copy()->addMinutes($interval)->lte($availEnd)) {
+                $slotKey = $date.'_'.$slotStart.'_'.$slotEnd;
+                $slots[] = [
+                    'key' => $slotKey,
+                    'date' => $date,
+                    'start_time' => $slotStart,
+                    'end_time' => $slotEnd,
+                    'participant' => $participant,
+                ];
             }
 
-            return $dateComparison;
-        });
+            $current->addMinutes($interval);
+        }
 
-        return $allTimeSlots;
+        return $slots;
     }
 
     /**
-     * Build matrix transpose index: timeSlot->participants for O(1) lookups.
-     * Returns only the essential index needed for calculations.
+     * Generate all 30-minute slots for a single event time slot definition.
      */
-    private function buildIndexes(array $rawData): array
+    private function generateEventTimeSlots(array $timeSlot): array
     {
-        // Matrix transpose: participant->timeSlots to timeSlot->participants
-        // Using Laravel Collection mapToGroups for efficient transpose
-        return collect($rawData)
-            ->filter(fn ($row) => ! empty($row['participant_name']) && ! empty($row['avail_start_time']))
-            ->mapToGroups(function ($row) {
-                $row = (array) $row;
-                $slots = $this->generateSlotsFromAvailability($row);
+        $date = $timeSlot['date'];
+        $start = $this->parseTimeString($timeSlot['start_time']);
+        $end = $this->parseTimeString($timeSlot['end_time']);
 
-                $result = [];
-                foreach ($slots as $slot) {
-                    $result[$slot['key']] = $row['participant_name'];
-                }
-
-                return $result;
-            })
-            ->map(fn ($group) => $group->unique()->values()->toArray())
-            ->toArray();
-    }
-
-    /**
-     * Generate 30-minute time slots between start and end time.
-     */
-    private function generateTimeSlots(string $startTime, string $endTime): array
-    {
         $slots = [];
-        $current = Carbon::createFromFormat('H:i:s', $startTime);
-        $end = Carbon::createFromFormat('H:i:s', $endTime);
-        $interval = 30; // 30 minutes
+        $current = $start->copy();
+        $interval = 30;
 
         while ($current->lt($end)) {
             $slotStart = $current->format('H:i');
             $slotEnd = $current->copy()->addMinutes($interval)->format('H:i');
 
-            // Don't add slot if it goes beyond the end time
             if ($current->copy()->addMinutes($interval)->lte($end)) {
+                $slotKey = $date.'_'.$slotStart.'_'.$slotEnd;
                 $slots[] = [
+                    'key' => $slotKey,
+                    'date' => $date,
                     'start_time' => $slotStart,
                     'end_time' => $slotEnd,
                 ];
@@ -162,46 +140,5 @@ class GroupAvailabilityService
         } catch (\Exception) {
             return Carbon::createFromFormat('H:i', $timeString);
         }
-    }
-
-    /**
-     * Generate all 30-minute slot keys that are covered by a single availability record.
-     * Used for matrix transpose optimization.
-     */
-    private function generateSlotsFromAvailability(array $availabilityRow): array
-    {
-        // Skip if no availability data
-        if (empty($availabilityRow['avail_start_time']) || empty($availabilityRow['avail_end_time'])) {
-            return [];
-        }
-
-        $date = $availabilityRow['date'];
-        $availStart = $this->parseTimeString($availabilityRow['avail_start_time']);
-        $availEnd = $this->parseTimeString($availabilityRow['avail_end_time']);
-
-        $slots = [];
-        $current = $availStart->copy();
-        $interval = 30; // 30 minutes
-
-        // Generate 30-minute slots that fall within this availability period
-        while ($current->lt($availEnd)) {
-            $slotStart = $current->format('H:i');
-            $slotEnd = $current->copy()->addMinutes($interval)->format('H:i');
-
-            // Only include slot if it's completely covered by availability
-            if ($current->copy()->addMinutes($interval)->lte($availEnd)) {
-                $slotKey = $date.'_'.$slotStart.'_'.$slotEnd;
-                $slots[] = [
-                    'key' => $slotKey,
-                    'date' => $date,
-                    'start_time' => $slotStart,
-                    'end_time' => $slotEnd,
-                ];
-            }
-
-            $current->addMinutes($interval);
-        }
-
-        return $slots;
     }
 }

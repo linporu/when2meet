@@ -70,30 +70,49 @@ test('it calculates group availability correctly', function () {
     ]);
 });
 
-test('it generates 30-minute time slots correctly', function () {
+test('it generates participant slots correctly', function () {
     $service = new GroupAvailabilityService;
     $reflection = new ReflectionClass($service);
-    $method = $reflection->getMethod('generateTimeSlots');
+    $method = $reflection->getMethod('generateParticipantSlots');
     $method->setAccessible(true);
 
-    $slots = $method->invoke($service, '09:00:00', '11:00:00');
+    $availabilityRow = [
+        'date' => '2025-08-01',
+        'avail_start_time' => '09:00:00',
+        'avail_end_time' => '11:00:00',
+        'participant_name' => 'Alice',
+    ];
+
+    $slots = $method->invoke($service, $availabilityRow);
 
     expect($slots)->toBeArray();
     expect(count($slots))->toBe(4); // 09:00-09:30, 09:30-10:00, 10:00-10:30, 10:30-11:00
 
-    expect($slots[0])->toBe(['start_time' => '09:00', 'end_time' => '09:30']);
-    expect($slots[1])->toBe(['start_time' => '09:30', 'end_time' => '10:00']);
-    expect($slots[2])->toBe(['start_time' => '10:00', 'end_time' => '10:30']);
-    expect($slots[3])->toBe(['start_time' => '10:30', 'end_time' => '11:00']);
+    expect($slots[0]['start_time'])->toBe('09:00');
+    expect($slots[0]['end_time'])->toBe('09:30');
+    expect($slots[0]['participant'])->toBe('Alice');
+    expect($slots[0]['key'])->toBe('2025-08-01_09:00_09:30');
 });
 
-test('it generates slots from availability correctly', function () {
+test('it handles empty availability correctly', function () {
     $service = new GroupAvailabilityService;
     $reflection = new ReflectionClass($service);
-    $method = $reflection->getMethod('generateSlotsFromAvailability');
+    $method = $reflection->getMethod('generateParticipantSlots');
     $method->setAccessible(true);
 
-    // Test case 1: Availability covers multiple slots
+    // Test case: Empty availability
+    $emptyRow = [
+        'date' => '2025-08-01',
+        'avail_start_time' => '',
+        'avail_end_time' => '',
+        'participant_name' => 'Bob',
+    ];
+
+    $slots = $method->invoke($service, $emptyRow);
+    expect($slots)->toBeArray();
+    expect(count($slots))->toBe(0);
+
+    // Test case: Partial availability
     $availabilityRow = [
         'date' => '2025-08-01',
         'avail_start_time' => '09:00:00',
@@ -109,17 +128,6 @@ test('it generates slots from availability correctly', function () {
     expect($slots[1]['key'])->toBe('2025-08-01_09:30_10:00');
     expect($slots[2]['key'])->toBe('2025-08-01_10:00_10:30');
 
-    // Test case 2: Empty availability
-    $emptyRow = [
-        'date' => '2025-08-01',
-        'avail_start_time' => '',
-        'avail_end_time' => '',
-        'participant_name' => 'Bob',
-    ];
-
-    $emptySlots = $method->invoke($service, $emptyRow);
-    expect($emptySlots)->toBeArray();
-    expect(count($emptySlots))->toBe(0);
 });
 
 test('it handles time format parsing correctly', function () {
