@@ -13,7 +13,7 @@ class GroupAvailabilityService
      */
     public function calculateGroupAvailability(Event $event): array
     {
-        $rawData = $event->getGroupAvailabilityData();
+        $rawData = $this->getEventParticipantAvailabilityData($event);
 
         // Calculate total participants once
         $totalParticipants = collect($rawData)
@@ -54,6 +54,33 @@ class GroupAvailabilityService
             ])
             ->sortKeys()
             ->values()
+            ->toArray();
+    }
+
+    /**
+     * Get optimized availability data for group availability calculation.
+     * Uses Eloquent Builder with JOIN to avoid N+1 issues while staying ORM-friendly.
+     */
+    private function getEventParticipantAvailabilityData(Event $event): array
+    {
+        return $event->timeSlots()
+            ->leftJoin('event_participants as ep', 'ep.event_id', '=', 'event_time_slots.event_id')
+            ->leftJoin('participant_availabilities as pa', function ($join) {
+                $join->on('pa.participant_id', '=', 'ep.id')
+                    ->on('pa.date', '=', 'event_time_slots.date');
+            })
+            ->select([
+                'event_time_slots.date',
+                'event_time_slots.start_time as slot_start_time',
+                'event_time_slots.end_time as slot_end_time',
+                'ep.id as participant_id',
+                'ep.name as participant_name',
+                'pa.start_time as avail_start_time',
+                'pa.end_time as avail_end_time',
+            ])
+            ->orderBy('event_time_slots.date')
+            ->orderBy('event_time_slots.start_time')
+            ->get()
             ->toArray();
     }
 
