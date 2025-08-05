@@ -57,6 +57,15 @@ php artisan make:test EventTest --unit
 - `php artisan migrate:rollback` - **MUST ask for permission first**
 - `php artisan migrate:fresh` - **ABSOLUTELY FORBIDDEN without explicit permission**
 
+### Rule 6: Asset Compilation Strategy
+
+**MUST** follow server-side compilation approach:
+
+- **ALWAYS** keep `/public/build` and `/public/hot` in `.gitignore`
+- **NEVER** commit compiled assets to Git repository
+- **ALWAYS** compile assets during deployment: `pnpm install && pnpm run build`
+- **PREFER** `pnpm` over `npm` for memory efficiency (GCP e2-micro constraint)
+
 ## Project Context
 
 Read @docs/PRD.md
@@ -64,10 +73,10 @@ Read @docs/PRD.md
 **When2Meet** - Event scheduling with availability grids
 
 - **Framework**: Laravel 12 + Blade templates
-- **Database**: SQLite (local) → MySQL/PostgreSQL (production)
+- **Database**: SQLite (local) → PostgreSQL 16 (production)
 - **Frontend**: Vite + Tailwind CSS v4
 - **Testing**: Pest PHP framework
-- **Target**: AWS EC2 deployment
+- **Target**: GCP e2-micro (Ubuntu 22.04) deployment
 - **Language**: English interface
 
 ### Tech Stack & Structure
@@ -108,6 +117,23 @@ resources/
 <div class="alert alert-{{ $type }}">{{ $message }}</div>
 ```
 
+### GCP e2-micro Deployment Considerations
+
+**⚠️ Resource Constraints**:
+
+- **RAM**: 1GB (limited memory for compilation and runtime)
+- **CPU**: 2 vCPU (shared)
+- **Storage**: 20GB HDD
+
+**Production Environment**:
+
+- **OS**: Ubuntu 22.04 LTS
+- **Database**: PostgreSQL 16
+- **Web Server**: Nginx + PHP 8.3-FPM
+- **Package Manager**: PNPM (memory-efficient)
+
+**Deployment Reference**: Read @docs/deployment-guide.md for complete setup instructions
+
 ## Standard Workflow
 
 ### Feature Development Process
@@ -140,8 +166,11 @@ composer run code  # Quality check
 ## Commands Toolkit
 
 Read @composer.json and @package.json for commands.
+Read @docs/deployment-guide.md for production deployment procedures.
 
 Run `php artisan` to look up artisan commands if needed.
+
+**Package Manager**: Use `pnpm` (memory-efficient, required for e2-micro deployment)
 
 ### Development Server
 
@@ -185,6 +214,8 @@ php artisan migrate           # Run migrations
 - Ignoring `composer run code` failures
 - **Modifying existing migration files**
 - **Running migration commands without approval**
+- **Committing compiled assets (`/public/build`) to Git**
+- **Using `npm` instead of `pnpm` (e2-micro memory constraint)**
 
 ### Failure Recovery
 
