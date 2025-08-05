@@ -254,7 +254,14 @@ git clone git@github.com:linporu/when2meet.git /var/www/when2meet
 cd /var/www/when2meet
 ```
 
-### 2. PostgreSQL 資料庫設定
+### 2. 安裝相依套件
+
+```bash
+# 安裝 PHP 後端套件（生產環境優化）
+composer install --no-dev --optimize-autoloader
+```
+
+### 3. PostgreSQL 資料庫設定
 
 ```bash
 # 切換到 postgres 使用者
@@ -275,7 +282,7 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO when2meet_user;
 \q
 ```
 
-### 3. 環境變數設定 (`.env`)
+### 4. 環境變數設定 (`.env`)
 
 ```bash
 # 複製環境設定檔
@@ -317,7 +324,7 @@ MAIL_MAILER=log
 APP_TIMEZONE=Asia/Taipei
 ```
 
-### 4. 產生應用程式金鑰
+### 5. 產生應用程式金鑰
 
 ```bash
 # 產生 Laravel 應用程式金鑰
@@ -325,13 +332,6 @@ php artisan key:generate
 
 # 檢查 .env 檔案中的 APP_KEY 是否已設定
 grep APP_KEY .env
-```
-
-### 5. 安裝相依套件
-
-```bash
-# 安裝 PHP 後端套件（生產環境優化）
-composer install --no-dev --optimize-autoloader
 ```
 
 **⚠️ 前端資產說明**：
