@@ -212,7 +212,7 @@ cd /var/www/when2meet
 # 1. 進入維護模式
 php artisan down
 
-# 2. 拉取最新程式碼
+# 2. 拉取最新程式碼（Sparse Checkout 自動過濾）
 git pull origin main
 
 # 3. 更新套件
@@ -232,6 +232,52 @@ sudo systemctl restart php8.3-fpm
 
 # 7. 結束維護模式
 php artisan up
+```
+
+### 5.1 Git Sparse Checkout 維護
+
+#### 檢查目前設定
+
+```bash
+# 檢查 sparse-checkout 狀態
+git sparse-checkout list
+
+# 確認目前工作目錄中的檔案
+ls -la
+
+# 檢查 Git 狀態（確認沒有遺漏的檔案）
+git status
+```
+
+#### 日常維護指令
+
+```bash
+# 更新程式碼（只更新已設定的檔案）
+git pull origin main
+
+# 如果需要臨時加入新的檔案或目錄
+git sparse-checkout add docs/emergency-guide.md
+git checkout HEAD -- docs/emergency-guide.md
+
+# 重新設定完整的 sparse-checkout（如果需要）
+git sparse-checkout reapply
+
+# 檢查被排除的檔案（用於確認設定正確）
+git ls-files --others --ignored --exclude-standard
+```
+
+#### 監控精簡部署效果
+
+```bash
+# 檢查磁碟使用量
+du -sh /var/www/when2meet
+
+# 比較完整 clone 和精簡部署的差異
+echo "精簡部署檔案數量："
+find /var/www/when2meet -type f | wc -l
+
+# 檢查是否有不應該存在的開發檔案
+ls -la /var/www/when2meet/ | grep -E "(test|spec|\.md$|config\.js$)" || echo "✅ 沒有發現開發檔案"
 ```
 
 ---

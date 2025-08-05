@@ -282,7 +282,124 @@ php artisan up
 
 ---
 
-## 4. 預防性檢查清單
+## 4. Git Sparse Checkout 故障排除
+
+### 問題：更新後缺少檔案
+
+**症狀**：`git pull` 後發現需要的檔案不存在
+
+**診斷步驟**：
+```bash
+# 檢查 sparse-checkout 設定
+git sparse-checkout list
+
+# 檢查檔案是否在 repository 中
+git ls-tree -r HEAD | grep "missing-file"
+
+# 檢查 Git 狀態
+git status
+```
+
+**解決方案**：
+```bash
+# 將缺少的檔案加入 sparse-checkout
+git sparse-checkout add path/to/missing-file
+
+# 檢出該檔案
+git checkout HEAD -- path/to/missing-file
+
+# 或重新應用 sparse-checkout
+git sparse-checkout reapply
+```
+
+### 問題：Sparse Checkout 設定損壞
+
+**症狀**：無法正常更新程式碼，或檔案狀態異常
+
+**診斷步驟**：
+```bash
+# 檢查 sparse-checkout 檔案內容
+cat .git/info/sparse-checkout
+
+# 檢查 sparse-checkout 模式
+git config core.sparseCheckout
+```
+
+**解決方案**：
+```bash
+# 重新初始化 sparse-checkout
+git sparse-checkout init --cone
+
+# 重新設定目錄清單
+git sparse-checkout set \
+  app \
+  bootstrap \
+  config \
+  database/factories \
+  database/migrations \
+  database/seeders \
+  public \
+  resources \
+  routes \
+  storage/app \
+  storage/framework \
+  artisan \
+  composer.json \
+  composer.lock \
+  package.json \
+  pnpm-lock.yaml
+
+# 強制重新檢出
+git read-tree -m -u HEAD
+```
+
+### 緊急情況：完整檔案復原
+
+如果需要臨時存取完整檔案進行故障排除：
+
+```bash
+# 備份目前的 sparse-checkout 設定
+cp .git/info/sparse-checkout .git/info/sparse-checkout.backup
+
+# 停用 sparse-checkout（存取所有檔案）
+git sparse-checkout disable
+git checkout .
+
+# 進行故障排除...
+
+# 完成後恢復精簡模式
+git sparse-checkout init --cone
+cp .git/info/sparse-checkout.backup .git/info/sparse-checkout
+git sparse-checkout reapply
+```
+
+### 檢查精簡部署完整性
+
+定期檢查以確保部署正確：
+
+```bash
+# 檢查不應該存在的開發檔案
+if ls -la | grep -E "(test|spec|README\.md|docs)" > /dev/null; then
+    echo "⚠️  發現不應該存在的開發檔案"
+    ls -la | grep -E "(test|spec|README\.md|docs)"
+else
+    echo "✅ 精簡部署檢查通過"
+fi
+
+# 檢查必要檔案是否存在
+required_files=("app" "config" "public" "artisan" "composer.json")
+for file in "${required_files[@]}"; do
+    if [[ ! -e "$file" ]]; then
+        echo "❌ 缺少必要檔案: $file"
+    else
+        echo "✅ $file 存在"
+    fi
+done
+```
+
+---
+
+## 5. 預防性檢查清單
 
 定期執行以下檢查以預防問題發生：
 
@@ -290,12 +407,14 @@ php artisan up
 - [ ] 檢查錯誤日誌是否有異常
 - [ ] 確認網站可正常存取
 - [ ] 檢查資料庫連線正常
+- [ ] 檢查精簡部署完整性
 
 ### 每週檢查
 - [ ] 檢查磁碟空間使用率 (< 80%)
 - [ ] 檢查記憶體使用率 (< 80%)
 - [ ] 檢查系統負載是否正常
 - [ ] 確認備份任務正常執行
+- [ ] 驗證 sparse-checkout 設定正確
 
 ### 每月檢查
 - [ ] 更新系統套件

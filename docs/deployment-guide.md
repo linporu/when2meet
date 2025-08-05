@@ -218,7 +218,7 @@ free -h
 
 ## Phase 3: 手動部署流程
 
-### 1. 建立專案目錄並下載程式碼
+### 1. 建立專案目錄並下載程式碼（精簡部署）
 
 ```bash
 # 建立專案目錄
@@ -227,12 +227,42 @@ sudo mkdir -p /var/www/when2meet
 # 設定目錄擁有者
 sudo chown -R $USER:$USER /var/www/when2meet
 
-# Clone 專案（替換為你的 Git Repository URL）
-git clone https://github.com/linporu/when2meet.git /var/www/when2meet
+# 使用 Sparse Checkout 只下載生產環境需要的檔案
+git clone --filter=blob:none --no-checkout https://github.com/linporu/when2meet.git /var/www/when2meet
 
 # 進入專案目錄
 cd /var/www/when2meet
+
+# 啟用 Sparse Checkout
+git sparse-checkout init --cone
+
+# 設定只包含生產環境必要的檔案和目錄
+git sparse-checkout set \
+  app \
+  bootstrap \
+  config \
+  database/factories \
+  database/migrations \
+  database/seeders \
+  public \
+  resources \
+  routes \
+  storage/app \
+  storage/framework \
+  artisan \
+  composer.json \
+  composer.lock \
+  package.json \
+  pnpm-lock.yaml
+
+# 檢出檔案
+git checkout
 ```
+
+**⚠️ Sparse Checkout 優勢**：
+- **安全性提升**：排除測試檔案 (`tests/`)、開發工具配置、文件檔案
+- **環境精簡**：只包含生產運行必要的檔案
+- **維護便利**：未來更新時自動過濾不需要的檔案
 
 ### 2. PostgreSQL 資料庫設定
 
@@ -336,7 +366,7 @@ pnpm install
 pnpm run build
 ```
 
-### 6. 設定檔案權限
+### 6. 設定檔案權限（精簡檔案結構優化）
 
 ```bash
 # ⚠️ 重要：採用安全的權限策略
@@ -356,7 +386,15 @@ sudo chmod -R 775 /var/www/when2meet/bootstrap/cache
 
 # .env 檔案特殊權限（只有擁有者可讀寫，最高安全性）
 chmod 600 /var/www/when2meet/.env
+
+# 確認 Sparse Checkout 設定檔案權限
+chmod 644 /var/www/when2meet/.git/info/sparse-checkout
 ```
+
+**✅ Sparse Checkout 權限優勢**：
+- **減少攻擊面**：測試檔案、開發工具配置不存在於伺服器，無法被攻擊者利用
+- **權限精簡**：只需設定真正需要的檔案權限，降低權限管理複雜度
+- **安全性提升**：敏感開發資訊（如文件檔案）不會暴露在生產環境
 
 ### 7. Laravel 框架設定
 
@@ -633,12 +671,12 @@ sudo systemctl status nginx php8.3-fpm postgresql
 
 部署完成後，建議你：
 
-1. **設定監控系統** - 監控日誌、備份資料庫、追蹤系統資源
-2. **了解故障排除** - 熟悉常見問題的診斷和解決方法
+1. **設定監控系統** - 監控日誌、備份資料庫、追蹤系統資源（參考 `docs/monitoring-guide.md`）  
+2. **了解故障排除** - 熟悉常見問題的診斷和解決方法（參考 `docs/troubleshooting-guide.md`）
 3. **建立維護流程** - 定期更新和保養系統
 
 ---
 
 **🚀 部署成功！**
 
-你的 When2Meet 現在已經成功運行在生產環境中。
+你的 When2Meet 現在已經成功運行在精簡、安全的生產環境中。
