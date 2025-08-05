@@ -205,7 +205,7 @@ free -h
 
 ### 1. 建立專案目錄並下載程式碼
 
-#### 1.1 準備 Git 認證（重要步驟）
+#### 1.1 準備 Git 認證
 
 GitHub 已不再支援密碼驗證，需要使用以下任一方式進行認證：
 
@@ -217,21 +217,21 @@ ssh-keygen -t ed25519 -C "your-email@example.com"
 
 # 顯示公鑰內容
 cat ~/.ssh/id_ed25519.pub
-
-# 複製公鑰並加入到 GitHub：
-# 前往 https://github.com/settings/ssh/new
-# 將公鑰內容貼上並儲存
 ```
+
+複製公鑰並加入到 GitHub：
+
+1. 前往 https://github.com/settings/ssh/new
+2. 將公鑰內容貼上並儲存
 
 **方法二：Personal Access Token (PAT)**
 
-```bash
-# 建立 PAT：
-# 1. 前往 https://github.com/settings/tokens
-# 2. 點擊 "Generate new token (classic)"
-# 3. 選擇 "repo" 權限
-# 4. 複製並保存 token（只會顯示一次）
-```
+建立 PAT：
+
+1. 前往 https://github.com/settings/tokens
+2. 點擊 "Generate new token (classic)"
+3. 選擇 "repo" 權限
+4. 複製並保存 token（只會顯示一次）
 
 #### 1.2 Clone 專案程式碼
 
@@ -246,7 +246,7 @@ sudo chown -R $USER:$USER /var/www/when2meet
 git clone git@github.com:linporu/when2meet.git /var/www/when2meet
 
 # 方法二：使用 PAT
-# git clone https://github.com/linporu/when2meet.git /var/www/when2meet
+git clone https://github.com/linporu/when2meet.git /var/www/when2meet
 # Username: your-github-username
 # Password: paste-your-PAT-token-here
 
@@ -392,7 +392,7 @@ php artisan route:clear
 php artisan view:clear
 ```
 
-### 8. **手動執行資料庫遷移（重要步驟）**
+### 8. 手動執行資料庫遷移
 
 ```bash
 # 測試資料庫連線
