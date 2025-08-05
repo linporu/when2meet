@@ -140,10 +140,9 @@ php -v
 ### 3. PostgreSQL 16 安裝
 
 ```bash
-# 新增 PostgreSQL 官方倉庫
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt update
+# 配置 PostgreSQL 官方倉庫（現代化方式）
+sudo apt install -y postgresql-common
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
 
 # 安裝 PostgreSQL 16
 sudo apt install -y postgresql-16 postgresql-contrib-16
