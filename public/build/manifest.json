@@ -1,0 +1,28 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-Can97Xe5.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-C0G0cght.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/pages/availability.js": {
+    "file": "assets/availability-kO3c2Cd9.js",
+    "name": "availability",
+    "src": "resources/js/pages/availability.js",
+    "isEntry": true
+  },
+  "resources/js/pages/events.js": {
+    "file": "assets/events-sNg80ih2.js",
+    "name": "events",
+    "src": "resources/js/pages/events.js",
+    "isEntry": true,
+    "imports": [
+      "resources/js/pages/availability.js"
+    ]
+  }
+}
