@@ -18,33 +18,43 @@
 
 在接觸伺服器之前，先確保你的專案已經準備好進入生產環境。
 
-### 1. 程式碼版本控制檢查
+### 1. 環境設定檔檢查
 
-```bash
-# 確認所有程式碼都已提交到 Git
-git status
-git log --oneline -5
-
-# 建議建立部署標籤
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-### 2. `.gitignore` 檢查
+#### 1.1 `.gitignore` 檢查
 
 確認 `.gitignore` 檔案包含以下內容，避免將敏感資訊上傳：
 
 ```gitignore
-/node_modules
-/public/build
-/storage/*.key
-/vendor
+# 敏感檔案
 .env
 .env.backup
+.env.production
+
+# 依賴套件
+/node_modules
+/vendor
+
+# 編譯檔案
+/public/build
+/public/hot
+
+# 框架快取與日誌
+/storage/*.key
+/storage/debugbar
+/storage/logs
 .phpunit.cache
+
+# 資料庫檔案
+database/database.sqlite
+*.sqlite
+*.sqlite3
+
+# 測試覆蓋率
+coverage/
+.nyc_output/
 ```
 
-### 3. 環境設定檔準備
+#### 1.2 環境設定檔準備
 
 檢查 `.env.example` 檔案，確保包含生產環境所需的所有變數：
 
@@ -53,7 +63,30 @@ git push origin v1.0.0
 cat .env.example | grep -E "^[A-Z_]+=.*$"
 ```
 
-### 4. **e2-micro 資源限制評估**
+確保 `.env.example` 包含生產環境的適當設定：
+- `APP_ENV=production`
+- `APP_DEBUG=false`
+- `LOG_LEVEL=error`
+- 資料庫連線設定 (PostgreSQL)
+
+### 2. 程式碼版本控制檢查
+
+```bash
+# 確認所有程式碼都已提交到 Git
+git status
+git log --oneline -5
+
+# 合併最新的功能分支到 main
+git checkout main
+git merge dev
+git push origin main
+
+# 建立部署標籤
+git tag v1.0.0 -m "Initial production deployment"
+git push origin v1.0.0
+```
+
+### 3. **e2-micro 資源限制評估**
 
 **⚠️ 重要提醒：e2-micro 資源限制**
 

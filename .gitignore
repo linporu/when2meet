@@ -17,8 +17,28 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/debugbar
+/storage/logs
 /storage/pail
 /vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Database files
+database/database.sqlite
+*.sqlite
+*.sqlite3
+
+# Test coverage reports
+coverage/
+.nyc_output/
+
+# npm package management
+.pnpm-debug.log*
+npm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
