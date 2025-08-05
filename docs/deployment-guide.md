@@ -170,21 +170,7 @@ sudo systemctl start nginx
 sudo systemctl status nginx
 ```
 
-### 5. Node.js 22 和 PNPM 安裝
-
-```bash
-# 安裝 Node.js 22
-curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# 安裝 PNPM，使用 Corepack
-corepack enable pnpm
-
-# 檢查版本
-node -v && npm -v && pnpm -v
-```
-
-### 6. Composer 安裝
+### 5. Composer 安裝
 
 ```bash
 # 下載並安裝 Composer
@@ -195,7 +181,7 @@ sudo mv composer.phar /usr/local/bin/composer
 composer --version
 ```
 
-### 7. **e2-micro 記憶體優化設定**
+### 6. **e2-micro 記憶體優化設定**
 
 ```bash
 # 建立 swap 檔案以增加虛擬記憶體（重要！）
@@ -251,18 +237,11 @@ git sparse-checkout set \
   storage/framework \
   artisan \
   composer.json \
-  composer.lock \
-  package.json \
-  pnpm-lock.yaml
+  composer.lock
 
 # 檢出檔案
 git checkout
 ```
-
-**⚠️ Sparse Checkout 優勢**：
-- **安全性提升**：排除測試檔案 (`tests/`)、開發工具配置、文件檔案
-- **環境精簡**：只包含生產運行必要的檔案
-- **維護便利**：未來更新時自動過濾不需要的檔案
 
 ### 2. PostgreSQL 資料庫設定
 
@@ -360,11 +339,12 @@ grep APP_KEY .env
 ```bash
 # 安裝 PHP 後端套件（生產環境優化）
 composer install --no-dev --optimize-autoloader
-
-# 安裝前端套件並建置
-pnpm install
-pnpm run build
 ```
+
+**⚠️ 前端資產說明**：
+- 前端資產（CSS/JS）已在本機預先編譯
+- `/public/build` 目錄已包含在 Git 中，無需在伺服器上編譯
+- 這樣可以節省伺服器資源，避免安裝 Node.js
 
 ### 6. 設定檔案權限（精簡檔案結構優化）
 
@@ -392,6 +372,7 @@ chmod 644 /var/www/when2meet/.git/info/sparse-checkout
 ```
 
 **✅ Sparse Checkout 權限優勢**：
+
 - **減少攻擊面**：測試檔案、開發工具配置不存在於伺服器，無法被攻擊者利用
 - **權限精簡**：只需設定真正需要的檔案權限，降低權限管理複雜度
 - **安全性提升**：敏感開發資訊（如文件檔案）不會暴露在生產環境
@@ -671,7 +652,7 @@ sudo systemctl status nginx php8.3-fpm postgresql
 
 部署完成後，建議你：
 
-1. **設定監控系統** - 監控日誌、備份資料庫、追蹤系統資源（參考 `docs/monitoring-guide.md`）  
+1. **設定監控系統** - 監控日誌、備份資料庫、追蹤系統資源（參考 `docs/monitoring-guide.md`）
 2. **了解故障排除** - 熟悉常見問題的診斷和解決方法（參考 `docs/troubleshooting-guide.md`）
 3. **建立維護流程** - 定期更新和保養系統
 

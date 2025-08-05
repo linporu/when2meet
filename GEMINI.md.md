@@ -59,12 +59,13 @@ php artisan make:test EventTest --unit
 
 ### Rule 6: Asset Compilation Strategy
 
-**MUST** follow server-side compilation approach:
+**MUST** follow pre-compiled assets approach for production deployment:
 
-- **ALWAYS** keep `/public/build` and `/public/hot` in `.gitignore`
-- **NEVER** commit compiled assets to Git repository
-- **ALWAYS** compile assets during deployment: `pnpm install && pnpm run build`
-- **PREFER** `pnpm` over `npm` for memory efficiency (GCP e2-micro constraint)
+- **COMPILE** assets locally before deployment: `pnpm install && pnpm run build`
+- **COMMIT** compiled `/public/build` directory to Git repository
+- **EXCLUDE** `/public/hot` from Git (development only)
+- **DEPLOY** with pre-compiled assets to avoid Node.js installation on production server
+- **UPDATE** assets only when releasing new versions to minimize Git history changes
 
 ## Project Context
 
