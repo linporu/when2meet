@@ -117,7 +117,7 @@ sudo apt update && sudo apt upgrade -y
 
 # 安裝基礎工具
 sudo apt install -y curl wget git unzip software-properties-common \
-                    apt-transport-https ca-certificates gnupg lsb-release
+                    apt-transport-https ca-certificates gnupg lsb-release vim nano
 ```
 
 ### 2. PHP 8.3 安裝
@@ -281,7 +281,8 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO when2meet_user;
 # 複製環境設定檔
 cp .env.example .env
 
-# 編輯環境設定（使用 nano 或 vim）
+# 編輯環境設定
+vim .env
 nano .env
 ```
 
@@ -316,25 +317,6 @@ MAIL_MAILER=log
 APP_TIMEZONE=Asia/Taipei
 ```
 
-### 3.1. 檔案權限安全設定
-
-**⚠️ 重要：檔案權限設定**
-
-正確的檔案權限是 Laravel 部署成功的關鍵。Laravel 需要在特定目錄寫入日誌檔案、Session 檔案、快取檔案等。如果網頁伺服器 (www-data) 沒有權限寫入這些目錄，應用程式會拋出 500 伺服器錯誤。
-
-**權限策略說明**：
-
-- **一般檔案**：644 權限（擁有者可讀寫，群組和其他人只能讀）
-- **目錄**：755 權限（擁有者可讀寫執行，群組和其他人可讀執行）
-- **可寫目錄**：775 權限（storage, bootstrap/cache）
-- **敏感檔案**：600 權限（.env 檔案）
-
-**安全優勢**：
-
-1. **最小權限原則**：網頁伺服器只獲得必需的群組權限
-2. **維護便利**：開發者保持檔案擁有權，便於程式碼更新
-3. **敏感檔案保護**：.env 等敏感檔案有更嚴格的權限控制
-
 ### 4. 產生應用程式金鑰
 
 ```bash
@@ -353,11 +335,29 @@ composer install --no-dev --optimize-autoloader
 ```
 
 **⚠️ 前端資產說明**：
+
 - 前端資產（CSS/JS）已在本機預先編譯
 - `/public/build` 目錄已包含在 Git 中，無需在伺服器上編譯
 - 這樣可以節省伺服器資源，避免安裝 Node.js
 
 ### 6. 設定檔案權限
+
+**⚠️ 重要：檔案權限設定**
+
+正確的檔案權限是 Laravel 部署成功的關鍵。Laravel 需要在特定目錄寫入日誌檔案、Session 檔案、快取檔案等。如果網頁伺服器 (www-data) 沒有權限寫入這些目錄，應用程式會拋出 500 伺服器錯誤。
+
+**權限策略說明**：
+
+- **一般檔案**：644 權限（擁有者可讀寫，群組和其他人只能讀）
+- **目錄**：755 權限（擁有者可讀寫執行，群組和其他人可讀執行）
+- **可寫目錄**：775 權限（storage, bootstrap/cache）
+- **敏感檔案**：600 權限（.env 檔案）
+
+**安全優勢**：
+
+1. **最小權限原則**：網頁伺服器只獲得必需的群組權限
+2. **維護便利**：開發者保持檔案擁有權，便於程式碼更新
+3. **敏感檔案保護**：.env 等敏感檔案有更嚴格的權限控制
 
 ```bash
 # ⚠️ 重要：採用安全的權限策略
