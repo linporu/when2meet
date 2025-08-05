@@ -261,6 +261,12 @@ cd /var/www/when2meet
 composer install --no-dev --optimize-autoloader
 ```
 
+**⚠️ 前端資產說明**：
+
+- 前端資產（CSS/JS）已在本機預先編譯
+- `/public/build` 目錄已包含在 Git 中，無需在伺服器上編譯
+- 這樣可以節省伺服器資源，避免安裝 Node.js
+
 ### 3. PostgreSQL 資料庫設定
 
 ```bash
@@ -333,12 +339,6 @@ php artisan key:generate
 # 檢查 .env 檔案中的 APP_KEY 是否已設定
 grep APP_KEY .env
 ```
-
-**⚠️ 前端資產說明**：
-
-- 前端資產（CSS/JS）已在本機預先編譯
-- `/public/build` 目錄已包含在 Git 中，無需在伺服器上編譯
-- 這樣可以節省伺服器資源，避免安裝 Node.js
 
 ### 6. 設定檔案權限
 
