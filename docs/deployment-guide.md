@@ -205,6 +205,36 @@ free -h
 
 ### 1. 建立專案目錄並下載程式碼
 
+#### 1.1 準備 Git 認證（重要步驟）
+
+GitHub 已不再支援密碼驗證，需要使用以下任一方式進行認證：
+
+**方法一：SSH 金鑰（推薦）**
+
+```bash
+# 產生 SSH 金鑰
+ssh-keygen -t ed25519 -C "your-email@example.com"
+
+# 顯示公鑰內容
+cat ~/.ssh/id_ed25519.pub
+
+# 複製公鑰並加入到 GitHub：
+# 前往 https://github.com/settings/ssh/new
+# 將公鑰內容貼上並儲存
+```
+
+**方法二：Personal Access Token (PAT)**
+
+```bash
+# 建立 PAT：
+# 1. 前往 https://github.com/settings/tokens
+# 2. 點擊 "Generate new token (classic)"
+# 3. 選擇 "repo" 權限
+# 4. 複製並保存 token（只會顯示一次）
+```
+
+#### 1.2 Clone 專案程式碼
+
 ```bash
 # 建立專案目錄
 sudo mkdir -p /var/www/when2meet
@@ -212,8 +242,13 @@ sudo mkdir -p /var/www/when2meet
 # 設定目錄擁有者
 sudo chown -R $USER:$USER /var/www/when2meet
 
-# Clone 專案程式碼
-git clone https://github.com/linporu/when2meet.git /var/www/when2meet
+# 方法一：使用 SSH（推薦）
+git clone git@github.com:linporu/when2meet.git /var/www/when2meet
+
+# 方法二：使用 PAT
+# git clone https://github.com/linporu/when2meet.git /var/www/when2meet
+# Username: your-github-username
+# Password: paste-your-PAT-token-here
 
 # 進入專案目錄
 cd /var/www/when2meet
