@@ -64,6 +64,7 @@ cat .env.example | grep -E "^[A-Z_]+=.*$"
 ```
 
 確保 `.env.example` 包含生產環境的適當設定：
+
 - `APP_ENV=production`
 - `APP_DEBUG=false`
 - `LOG_LEVEL=error`
@@ -537,7 +538,11 @@ sudo ufw allow 'Nginx Full'
 sudo ufw status
 ```
 
-### 5. SSL 憑證設定（Let's Encrypt）
+### 5. SSL 憑證設定（Cloudflare + Let's Encrypt 雙重保護）
+
+**推薦架構**：`用戶 ←→ Cloudflare SSL ←→ Let's Encrypt SSL ←→ 你的伺服器`
+
+#### 5.1 第一階段：Let's Encrypt 伺服器端設定
 
 ```bash
 # 安裝 Certbot
@@ -549,45 +554,66 @@ sudo certbot --nginx -d your-domain.com -d www.your-domain.com
 # 設定自動更新
 sudo systemctl enable certbot.timer
 sudo systemctl start certbot.timer
+
+# 驗證憑證狀態
+sudo certbot certificates
 ```
 
-### 6. 系統服務設定
+#### 5.2 第二階段：Cloudflare 設定
 
-建立 Laravel 佇列處理服務：
+**步驟**：
+
+1. **註冊 Cloudflare 免費帳號**：https://dash.cloudflare.com/sign-up
+2. **新增網站**：點擊 "Add a site"，輸入你的網域
+3. **更換 DNS**：將你的網域 NS 記錄指向 Cloudflare 提供的 nameservers
+4. **設定 SSL 模式**：
 
 ```bash
-# 建立 systemd 服務檔案
-sudo nano /etc/systemd/system/when2meet-queue.service
+# 在 Cloudflare Dashboard:
+# SSL/TLS > Overview > Choose "Full (strict)"
+#
+# ⚠️ 重要：絕對不要選擇 "Flexible" 模式
+# - Flexible：用戶→Cloudflare 加密，Cloudflare→伺服器 明文 ❌
+# - Full (strict)：雙重 SSL 加密，真正安全 ✅
 ```
 
-服務設定內容：
-
-```ini
-[Unit]
-Description=When2Meet Laravel Queue Worker
-After=network.target database.service
-
-[Service]
-Type=simple
-User=www-data
-Group=www-data
-WorkingDirectory=/var/www/when2meet
-ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --timeout=90
-Restart=always
-RestartSec=5
-
-[Install]
-WantedBy=multi-user.target
-```
+**Cloudflare 額外優化設定**：
 
 ```bash
-# 啟用並啟動服務
-sudo systemctl enable when2meet-queue
-sudo systemctl start when2meet-queue
-
-# 檢查服務狀態
-sudo systemctl status when2meet-queue
+# 在 Cloudflare Dashboard 可啟用：
+# - Always Use HTTPS：自動重導向到 HTTPS
+# - HTTP Strict Transport Security (HSTS)：強制瀏覽器使用 HTTPS
+# - TLS 1.3：使用最新的 TLS 版本
+# - Brotli 壓縮：更好的內容壓縮
 ```
+
+#### 5.3 驗證雙重 SSL 設定
+
+```bash
+# 測試 SSL 憑證（透過 Cloudflare）
+curl -I https://your-domain.com
+
+# 檢查 SSL 鏈
+openssl s_client -connect your-domain.com:443 -servername your-domain.com
+
+# 檢查伺服器直接連線（繞過 Cloudflare）
+curl -I https://your-server-ip --resolve your-domain.com:443:your-server-ip
+```
+
+#### 5.4 為什麼需要雙重 SSL？
+
+| 模式              | 用戶→Cloudflare | Cloudflare→伺服器    | 安全性     |
+| ----------------- | --------------- | -------------------- | ---------- |
+| **Flexible**      | 🔒 加密         | ❌ 明文              | **危險**   |
+| **Full**          | 🔒 加密         | 🔒 加密 (不驗證憑證) | 部分安全   |
+| **Full (strict)** | 🔒 加密         | 🔒 加密 (驗證憑證)   | **最安全** |
+
+**額外好處**：
+
+- 🚀 **CDN 加速**：全球節點快取
+- 🛡️ **DDoS 防護**：自動阻擋攻擊
+- 📊 **流量分析**：免費網站統計
+- 🔧 **WAF 防火牆**：阻擋惡意請求
 
 ---
 
