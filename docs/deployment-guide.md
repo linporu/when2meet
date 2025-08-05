@@ -568,24 +568,22 @@ sudo certbot certificates
 3. **更換 DNS**：將你的網域 NS 記錄指向 Cloudflare 提供的 nameservers
 4. **設定 SSL 模式**：
 
-```bash
-# 在 Cloudflare Dashboard:
-# SSL/TLS > Overview > Choose "Full (strict)"
-#
-# ⚠️ 重要：絕對不要選擇 "Flexible" 模式
-# - Flexible：用戶→Cloudflare 加密，Cloudflare→伺服器 明文 ❌
-# - Full (strict)：雙重 SSL 加密，真正安全 ✅
-```
+在 Cloudflare Dashboard:
+SSL/TLS > Overview > Choose "Full (strict)"
+
+⚠️ 重要：絕對不要選擇 "Flexible" 模式
+
+- Flexible：用戶→Cloudflare 加密，Cloudflare→伺服器 明文 ❌
+- Full (strict)：雙重 SSL 加密，真正安全 ✅
 
 **Cloudflare 額外優化設定**：
 
-```bash
-# 在 Cloudflare Dashboard 可啟用：
-# - Always Use HTTPS：自動重導向到 HTTPS
-# - HTTP Strict Transport Security (HSTS)：強制瀏覽器使用 HTTPS
-# - TLS 1.3：使用最新的 TLS 版本
-# - Brotli 壓縮：更好的內容壓縮
-```
+在 Cloudflare Dashboard 可啟用：
+
+- Always Use HTTPS：自動重導向到 HTTPS
+- HTTP Strict Transport Security (HSTS)：強制瀏覽器使用 HTTPS
+- TLS 1.3：使用最新的 TLS 版本
+- Brotli 壓縮：更好的內容壓縮
 
 #### 5.3 驗證雙重 SSL 設定
 
@@ -600,352 +598,47 @@ openssl s_client -connect your-domain.com:443 -servername your-domain.com
 curl -I https://your-server-ip --resolve your-domain.com:443:your-server-ip
 ```
 
-#### 5.4 為什麼需要雙重 SSL？
-
-| 模式              | 用戶→Cloudflare | Cloudflare→伺服器    | 安全性     |
-| ----------------- | --------------- | -------------------- | ---------- |
-| **Flexible**      | 🔒 加密         | ❌ 明文              | **危險**   |
-| **Full**          | 🔒 加密         | 🔒 加密 (不驗證憑證) | 部分安全   |
-| **Full (strict)** | 🔒 加密         | 🔒 加密 (驗證憑證)   | **最安全** |
-
-**額外好處**：
-
-- 🚀 **CDN 加速**：全球節點快取
-- 🛡️ **DDoS 防護**：自動阻擋攻擊
-- 📊 **流量分析**：免費網站統計
-- 🔧 **WAF 防火牆**：阻擋惡意請求
-
 ---
 
-## Phase 5: 監控與維護
-
-### 1. 日誌監控
-
-```bash
-# Laravel 應用程式日誌
-sudo tail -f /var/www/when2meet/storage/logs/laravel.log
-
-# Nginx 存取日誌
-sudo tail -f /var/log/nginx/access.log
-
-# Nginx 錯誤日誌
-sudo tail -f /var/log/nginx/error.log
-
-# PostgreSQL 日誌
-sudo tail -f /var/log/postgresql/postgresql-16-main.log
-
-# 系統日誌
-sudo journalctl -f -u nginx -u php8.3-fpm -u postgresql
-```
-
-### 2. 資料庫備份
-
-建立自動備份腳本：
-
-```bash
-# 建立備份目錄
-sudo mkdir -p /var/backups/when2meet
-
-# 建立備份腳本
-sudo nano /usr/local/bin/backup-when2meet.sh
-```
-
-備份腳本內容：
-
-```bash
-#!/bin/bash
-BACKUP_DIR="/var/backups/when2meet"
-DATE=$(date +%Y%m%d_%H%M%S)
-DB_NAME="when2meet"
-DB_USER="when2meet_user"
-
-# 建立資料庫備份
-pg_dump -U $DB_USER -h localhost $DB_NAME > $BACKUP_DIR/db_backup_$DATE.sql
-
-# 建立應用程式備份（不含 vendor 和 node_modules）
-tar --exclude='vendor' --exclude='node_modules' --exclude='storage/logs/*' \
-    -czf $BACKUP_DIR/app_backup_$DATE.tar.gz /var/www/when2meet
-
-# 刪除 7 天前的備份
-find $BACKUP_DIR -name "*.sql" -mtime +7 -delete
-find $BACKUP_DIR -name "*.tar.gz" -mtime +7 -delete
-
-echo "Backup completed: $DATE"
-```
-
-```bash
-# 設定執行權限
-sudo chmod +x /usr/local/bin/backup-when2meet.sh
-
-# 建立 crontab 任務（每日凌晨 2 點備份）
-sudo crontab -e
-# 新增以下行：
-# 0 2 * * * /usr/local/bin/backup-when2meet.sh >> /var/log/backup.log 2>&1
-```
-
-### 3. 系統效能監控
-
-建立資源監控腳本：
-
-```bash
-# 建立監控腳本
-sudo nano /usr/local/bin/monitor-resources.sh
-```
-
-監控腳本內容：
-
-```bash
-#!/bin/bash
-# e2-micro 資源監控腳本
-
-echo "=== 系統資源監控 $(date) ==="
-
-# 記憶體使用情況
-echo "記憶體使用："
-free -h
-
-# 磁碟使用情況
-echo "磁碟使用："
-df -h /
-
-# CPU 負載
-echo "CPU 負載："
-uptime
-
-# PostgreSQL 連線數
-echo "資料庫連線數："
-sudo -u postgres psql -c "SELECT count(*) as connections FROM pg_stat_activity;"
-
-# Laravel 佇列狀態
-echo "Laravel 佇列狀態："
-cd /var/www/when2meet && php artisan queue:work --once --quiet
-
-echo "==========================================\n"
-```
-
-### 4. 日誌輪轉設定
-
-```bash
-# 設定 Laravel 日誌輪轉
-sudo nano /etc/logrotate.d/when2meet
-```
-
-日誌輪轉設定：
-
-```
-/var/www/when2meet/storage/logs/*.log {
-    daily
-    missingok
-    rotate 7
-    compress
-    notifempty
-    create 664 www-data www-data
-    postrotate
-        systemctl reload php8.3-fpm
-    endscript
-}
-```
-
----
-
-## Phase 6: 故障排除指南
-
-### 1. 常見問題診斷
-
-#### 問題 1：網站無法存取（502 Bad Gateway）
-
-```bash
-# 檢查 PHP-FPM 狀態
-sudo systemctl status php8.3-fpm
-
-# 檢查 Nginx 錯誤日誌
-sudo tail -n 50 /var/log/nginx/error.log
-
-# 重新啟動服務
-sudo systemctl restart php8.3-fpm nginx
-```
-
-#### 問題 2：資料庫連線失敗
-
-```bash
-# 檢查 PostgreSQL 狀態
-sudo systemctl status postgresql
-
-# 測試資料庫連線
-sudo -u postgres psql -c "SELECT version();"
-
-# 檢查 Laravel 設定
-cd /var/www/when2meet
-php artisan tinker
-# 在 tinker 中執行：DB::connection()->getPdo();
-```
-
-#### 問題 3：檔案權限問題（500 錯誤）
-
-**症狀**：網站顯示白畫面或 500 伺服器錯誤
-
-```bash
-# 檢查 Laravel 日誌
-sudo tail -n 50 /var/www/when2meet/storage/logs/laravel.log
-
-# 檢查關鍵目錄權限
-ls -la /var/www/when2meet/storage/
-ls -la /var/www/when2meet/bootstrap/cache/
-
-# 重新設定權限（如果發現權限不正確）
-sudo chown -R $USER:www-data /var/www/when2meet
-sudo chmod -R 775 /var/www/when2meet/storage
-sudo chmod -R 775 /var/www/when2meet/bootstrap/cache
-chmod 600 /var/www/when2meet/.env
-
-# 測試寫入權限
-sudo -u www-data touch /var/www/when2meet/storage/logs/test.log
-# 如果成功建立檔案，表示權限正確
-sudo rm /var/www/when2meet/storage/logs/test.log
-```
-
-#### 問題 4：記憶體不足（e2-micro 特有）
-
-```bash
-# 檢查記憶體使用
-free -h
-
-# 檢查 swap 使用
-swapon --show
-
-# 重新啟動服務釋放記憶體
-sudo systemctl restart php8.3-fpm nginx postgresql
-```
-
-#### 問題 5：磁碟空間不足
-
-```bash
-# 檢查磁碟使用
-df -h
-
-# 清理日誌檔案
-sudo find /var/log -name "*.log" -type f -size +100M -exec truncate -s 0 {} \;
-
-# 清理 Laravel 日誌
-sudo truncate -s 0 /var/www/when2meet/storage/logs/laravel.log
-
-# 清理套件快取
-sudo apt autoremove && sudo apt autoclean
-```
-
-### 2. 除錯工具
-
-```bash
-# Laravel 除錯模式（僅限開發）
-cd /var/www/when2meet
-php artisan down
-# 編輯 .env：APP_DEBUG=true
-php artisan config:clear
-php artisan up
-
-# 查看 Laravel 日誌
-php artisan log:clear
-tail -f storage/logs/laravel.log
-
-# 資料庫查詢除錯
-php artisan tinker
-# 開啟查詢日誌：DB::enableQueryLog();
-# 執行查詢後檢視：DB::getQueryLog();
-```
-
-### 3. 效能最佳化檢查清單
-
-- [ ] PHP OpCache 是否啟用
-- [ ] Laravel 設定檔案是否已快取
-- [ ] 資料庫索引是否建立完成
-- [ ] Nginx gzip 壓縮是否啟用
-- [ ] SSL 憑證是否正確設定
-- [ ] 防火牆規則是否適當
-
-### 4. 緊急恢復程序
-
-#### 系統無法啟動
-
-```bash
-# 透過 GCP Console 連線
-# 檢查系統日誌
-sudo journalctl -b
-
-# 回復到最後一個正常狀態
-sudo systemctl disable when2meet-queue
-sudo systemctl stop nginx php8.3-fpm postgresql
-sudo systemctl start postgresql php8.3-fpm nginx
-```
-
-#### 資料庫損壞
-
-```bash
-# 從備份恢復資料庫
-sudo -u postgres dropdb when2meet
-sudo -u postgres createdb when2meet -O when2meet_user
-sudo -u postgres psql when2meet < /var/backups/when2meet/db_backup_YYYYMMDD_HHMMSS.sql
-```
-
----
-
-## 部署完成！
+## Phase 5: 部署驗證
 
 🎉 恭喜！你的 When2Meet 應用程式現在已經成功部署到 GCP 的 Ubuntu 22.04 伺服器上。
 
 ### 快速驗證清單
 
-- [ ] 網站可以正常存取：`http://your-domain.com`
-- [ ] SSL 憑證正常運作：`https://your-domain.com`
-- [ ] 資料庫連線正常
-- [ ] 建立事件功能正常
-- [ ] 參與事件功能正常
-
-### 日常維護建議
-
-1. **每週檢查**：系統資源使用狀況
-2. **每月檢查**：備份檔案完整性
-3. **定期更新**：系統套件和 Laravel 框架
-4. **監控日誌**：注意異常錯誤訊息
-
-### 未來的更新流程
-
-當你需要更新程式碼時，執行以下步驟：
-
 ```bash
+# 檢查網站可以正常存取
+curl -I http://your-domain.com
+
+# 檢查 SSL 憑證運作（如果已設定）
+curl -I https://your-domain.com
+
+# 測試資料庫連線
 cd /var/www/when2meet
+php artisan tinker
+# 在 tinker 中執行：DB::connection()->getPdo();
 
-# 1. 進入維護模式
-php artisan down
-
-# 2. 拉取最新程式碼
-git pull origin main
-
-# 3. 更新套件
-composer install --no-dev --optimize-autoloader
-pnpm install && pnpm run build
-
-# 4. 手動執行資料庫遷移（如果有）
-php artisan migrate
-
-# 5. 清除並重建快取
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
-
-# 6. 重新啟動服務
-sudo systemctl restart php8.3-fpm when2meet-queue
-
-# 7. 結束維護模式
-php artisan up
+# 檢查所有服務狀態
+sudo systemctl status nginx php8.3-fpm postgresql
 ```
+
+**功能測試**：
+
+- [ ] 網站首頁可以正常載入
+- [ ] 可以建立新事件
+- [ ] 可以參與事件並設定時間
+- [ ] 群組可用性視覺化正常顯示
+
+### 部署完成後的下一步
+
+部署完成後，建議你：
+
+1. **設定監控系統** - 監控日誌、備份資料庫、追蹤系統資源
+2. **了解故障排除** - 熟悉常見問題的診斷和解決方法
+3. **建立維護流程** - 定期更新和保養系統
 
 ---
 
-**📧 需要協助？**
-如遇到問題，請檢查：
+**🚀 部署成功！**
 
-1. 錯誤日誌：`/var/www/when2meet/storage/logs/laravel.log`
-2. Nginx 日誌：`/var/log/nginx/error.log`
-3. 系統日誌：`sudo journalctl -xe`
-
-祝部署成功！🚀
+你的 When2Meet 現在已經成功運行在生產環境中。
