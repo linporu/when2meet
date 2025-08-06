@@ -417,8 +417,10 @@ php artisan migrate --pretend --force
 # 確認無誤後，手動執行遷移
 php artisan migrate
 
-# 檢查資料表是否建立成功
-php artisan tinker --execute='DB::select("SELECT tablename FROM pg_tables WHERE schemaname = '\''public'\''"); echo "Tables listed successfully!";'
+# 驗證遷移結果
+php artisan migrate:status
+
+# 此外可再用 TablePlus SSH 連線去看狀況
 ```
 
 ### 9. 生產環境效能優化
