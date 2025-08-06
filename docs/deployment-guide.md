@@ -365,15 +365,24 @@ grep APP_KEY .env
 sudo chown -R $USER:www-data /var/www/when2meet
 
 # 設定基本檔案權限
-# 檔案：644 (擁有者可讀寫，群組和其他人只能讀)
 # 目錄：755 (擁有者可讀寫執行，群組和其他人可讀執行)
-sudo find /var/www/when2meet -type f -exec chmod 644 {} \;
 sudo find /var/www/when2meet -type d -exec chmod 755 {} \;
+# 檔案：644 (擁有者可讀寫，群組和其他人只能讀)
+sudo find /var/www/when2meet -type f -exec chmod 644 {} \;
+
 
 # Laravel 特殊權限：storage 和 bootstrap/cache 需要群組寫入權限
-# 775 權限讓 www-data 群組可以寫入日誌檔案和快取檔案
-sudo chmod -R 775 /var/www/when2meet/storage
-sudo chmod -R 775 /var/www/when2meet/bootstrap/cache
+# storage 目錄結構
+# 目錄：775 權限讓 www-data 群組可以建立/刪除檔案
+sudo find /var/www/when2meet/storage -type d -exec chmod 775 {} \;
+# 檔案：664 權限讓 www-data 群組可以寫入日誌檔案（無執行權限）
+sudo find /var/www/when2meet/storage -type f -exec chmod 664 {} \;
+
+# bootstrap/cache 目錄結構
+# 目錄：775 權限讓 www-data 群組可以建立快取檔案
+sudo find /var/www/when2meet/bootstrap/cache -type d -exec chmod 775 {} \;
+# 檔案：664 權限讓 www-data 群組可以寫入快取檔案（無執行權限）
+sudo find /var/www/when2meet/bootstrap/cache -type f -exec chmod 664 {} \;
 
 # .env 檔案特殊權限（只有擁有者可讀寫，最高安全性）
 chmod 600 /var/www/when2meet/.env
