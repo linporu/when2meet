@@ -370,7 +370,6 @@ sudo find /var/www/when2meet -type d -exec chmod 755 {} \;
 # 檔案：644 (擁有者可讀寫，群組和其他人只能讀)
 sudo find /var/www/when2meet -type f -exec chmod 644 {} \;
 
-
 # Laravel 特殊權限：storage 和 bootstrap/cache 需要群組寫入權限
 # storage 目錄結構
 # 目錄：775 權限讓 www-data 群組可以建立/刪除檔案
@@ -383,6 +382,9 @@ sudo find /var/www/when2meet/storage -type f -exec chmod 664 {} \;
 sudo find /var/www/when2meet/bootstrap/cache -type d -exec chmod 775 {} \;
 # 檔案：664 權限讓 www-data 群組可以寫入快取檔案（無執行權限）
 sudo find /var/www/when2meet/bootstrap/cache -type f -exec chmod 664 {} \;
+
+# artisan 檔案執行權限（Laravel 命令列工具）
+chmod 755 /var/www/when2meet/artisan
 
 # .env 檔案特殊權限（只有擁有者可讀寫，最高安全性）
 chmod 600 /var/www/when2meet/.env
