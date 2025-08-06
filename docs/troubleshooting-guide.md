@@ -45,25 +45,82 @@ sudo php-fpm8.3 -t
 # 檢查 PostgreSQL 狀態
 sudo systemctl status postgresql
 
-# 測試資料庫連線
+# 測試 PostgreSQL 本身是否運作
 sudo -u postgres psql -c "SELECT version();"
 
-# 檢查 Laravel 設定
+# **Laravel 資料庫連線測試（建議方法）**
 cd /var/www/when2meet
-php artisan tinker
-# 在 tinker 中執行：DB::connection()->getPdo();
+php artisan tinker --execute='DB::connection()->getPdo(); echo "Laravel database connection successful!";'
 ```
 
-**解決方案**：
+**常見錯誤訊息與診斷**：
+
+**✅ 成功輸出**：
+```
+Laravel database connection successful!
+```
+
+**❌ 失敗輸出範例**：
+
+1. **"Connection refused"**
+   ```
+   SQLSTATE[08006] [7] could not connect to server: Connection refused
+   ```
+   **原因**：PostgreSQL 服務未啟動
+   **解決**：`sudo systemctl start postgresql`
+
+2. **"Access denied" / "Authentication failed"**
+   ```
+   SQLSTATE[08006] [7] FATAL: password authentication failed for user "when2meet_user"
+   ```
+   **原因**：帳號密碼錯誤或 .env 設定錯誤
+   **解決**：檢查 `.env` 檔案的 `DB_USERNAME` 和 `DB_PASSWORD`
+
+3. **"Database does not exist"**
+   ```
+   SQLSTATE[08006] [7] FATAL: database "when2meet" does not exist
+   ```
+   **原因**：資料庫名稱錯誤或資料庫未建立
+   **解決**：檢查 `.env` 檔案的 `DB_DATABASE` 或重新建立資料庫
+
+4. **"Class 'PDO' not found"**
+   ```
+   Class 'PDO' not found
+   ```
+   **原因**：PHP 缺少 pdo_pgsql 擴充套件
+   **解決**：`sudo apt install php8.3-pgsql && sudo systemctl restart php8.3-fpm`
+
+**進階診斷指令**：
 ```bash
-# 重新啟動 PostgreSQL
-sudo systemctl restart postgresql
+# 檢查 PHP PostgreSQL 擴充套件
+php -m | grep -i pgsql
 
 # 檢查 .env 檔案中的資料庫設定
 grep -E "^DB_" /var/www/when2meet/.env
 
-# 測試具體的資料庫連線
+# 測試直接資料庫連線（使用 .env 中的憑證）
 sudo -u postgres psql -h 127.0.0.1 -U when2meet_user -d when2meet
+
+# 檢查 PostgreSQL 日誌
+sudo tail -n 20 /var/log/postgresql/postgresql-16-main.log
+```
+
+**解決方案**：
+```bash
+# 重新啟動相關服務
+sudo systemctl restart postgresql php8.3-fpm
+
+# 如果是權限問題，重新授權
+sudo -u postgres psql -d when2meet -c "
+  GRANT ALL PRIVILEGES ON DATABASE when2meet TO when2meet_user;
+  GRANT ALL ON SCHEMA public TO when2meet_user;
+  GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO when2meet_user;
+  GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO when2meet_user;
+"
+
+# 清除 Laravel 設定快取
+cd /var/www/when2meet
+php artisan config:clear
 ```
 
 ---

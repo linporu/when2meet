@@ -407,19 +407,18 @@ php artisan view:clear
 
 ```bash
 # 測試資料庫連線
-php artisan tinker
-# 在 tinker 中執行：DB::connection()->getPdo();
-# 如果沒有錯誤，表示連線成功，輸入 exit 退出
+php artisan tinker --execute='DB::connection()->getPdo(); echo "Laravel database connection successful!";'
 
 # 預覽將要執行的遷移
-php artisan migrate --pretend
+# `--pretend` 只顯示 SQL 語句，不會修改資料庫
+# `--force` 只是跳過生產環境確認提示，不會讓操作變危險
+php artisan migrate --pretend --force
 
 # 確認無誤後，手動執行遷移
 php artisan migrate
 
 # 檢查資料表是否建立成功
-php artisan tinker
-# 在 tinker 中執行：DB::select('SELECT tablename FROM pg_tables WHERE schemaname = \'public\'');
+php artisan tinker --execute='DB::select("SELECT tablename FROM pg_tables WHERE schemaname = '\''public'\''"); echo "Tables listed successfully!";'
 ```
 
 ### 9. 生產環境效能優化
