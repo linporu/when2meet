@@ -447,7 +447,7 @@ php artisan event:cache
 
 ```bash
 # 編輯 PHP-FPM 配置
-sudo nano /etc/php/8.3/fpm/pool.d/www.conf
+sudo vim /etc/php/8.3/fpm/pool.d/www.conf
 ```
 
 調整以下設定（e2-micro 記憶體優化）：
@@ -470,7 +470,7 @@ sudo systemctl restart php8.3-fpm
 
 ```bash
 # 建立網站設定檔
-sudo nano /etc/nginx/sites-available/when2meet
+sudo vim /etc/nginx/sites-available/when2meet
 ```
 
 **Nginx 設定檔內容**：
@@ -558,6 +558,9 @@ sudo systemctl reload nginx
 ### 4. Ubuntu 防火牆設定
 
 ```bash
+# 安裝 UFW 防火牆
+sudo apt install -y ufw
+
 # 啟用 UFW 防火牆
 sudo ufw enable
 
@@ -583,6 +586,14 @@ sudo apt install -y certbot python3-certbot-nginx
 
 # 取得 SSL 憑證（替換為你的網域）
 sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+
+# 如果 Nginx 設定出現問題，可以重新安裝憑證
+# Certbot 會自動添加正確的 SSL 設定到 Nginx 配置檔
+sudo certbot install --cert-name your-domain.com --nginx
+
+# 測試 Nginx 設定並重新載入
+sudo nginx -t
+sudo systemctl reload nginx
 
 # 設定自動更新
 sudo systemctl enable certbot.timer
@@ -648,8 +659,7 @@ curl -I https://your-domain.com
 
 # 測試資料庫連線
 cd /var/www/when2meet
-php artisan tinker
-# 在 tinker 中執行：DB::connection()->getPdo();
+php artisan tinker --execute='DB::connection()->getPdo(); echo "Laravel database connection successful!";'
 
 # 檢查所有服務狀態
 sudo systemctl status nginx php8.3-fpm postgresql
