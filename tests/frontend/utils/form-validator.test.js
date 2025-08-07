@@ -268,6 +268,159 @@ describe('FormValidator', () => {
         });
     });
 
+    describe('validateDate', () => {
+        it('should return true for valid future date', () => {
+            const input = document.createElement('input');
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 1);
+            input.value = futureDate.toISOString().split('T')[0];
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            const result = FormValidator.validateDate(input);
+            expect(result).toBe(true);
+        });
+
+        it('should return true for today when allowPastDates is true', () => {
+            const input = document.createElement('input');
+            const today = new Date().toISOString().split('T')[0];
+            input.value = today;
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            const result = FormValidator.validateDate(input, true);
+            expect(result).toBe(true);
+        });
+
+        it('should return false for empty date', () => {
+            const input = document.createElement('input');
+            input.value = '';
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            const result = FormValidator.validateDate(input);
+            expect(result).toBe(false);
+            expect(document.getElementById('test_date_error').textContent).toBe('Please select a date');
+        });
+
+        it('should return false for dates with year outside reasonable range', () => {
+            const input = document.createElement('input');
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            const invalidYearDates = [
+                '1800-01-01', // Too old
+                '10000-01-01' // Too far in future (but HTML won't accept this anyway)
+            ];
+
+            invalidYearDates.forEach(invalidDate => {
+                input.value = invalidDate;
+                const result = FormValidator.validateDate(input);
+                expect(result).toBe(false);
+                expect(document.getElementById('test_date_error').textContent).toBe('Please enter a valid date');
+            });
+        });
+
+        it('should return false for completely invalid date strings', () => {
+            const input = document.createElement('input');
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            const invalidDates = [
+                'not-a-date',
+                'abc-def-ghi',
+                '2023-13-01', // HTML date input typically rejects this
+                '2023-02-30'  // HTML date input typically rejects this
+            ];
+
+            invalidDates.forEach(invalidDate => {
+                input.value = invalidDate;
+                const result = FormValidator.validateDate(input);
+                expect(result).toBe(false);
+                expect(document.getElementById('test_date_error').textContent).toBe('Please enter a valid date');
+            });
+        });
+
+        it('should return false for past date when allowPastDates is false', () => {
+            const input = document.createElement('input');
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 1);
+            input.value = pastDate.toISOString().split('T')[0];
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            const result = FormValidator.validateDate(input);
+            expect(result).toBe(false);
+            expect(document.getElementById('test_date_error').textContent).toBe('Cannot select a past date');
+        });
+
+        it('should return true for past date when allowPastDates is true', () => {
+            const input = document.createElement('input');
+            const pastDate = new Date();
+            pastDate.setDate(pastDate.getDate() - 1);
+            input.value = pastDate.toISOString().split('T')[0];
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            const result = FormValidator.validateDate(input, true);
+            expect(result).toBe(true);
+        });
+
+        it('should prioritize year validation over past date validation', () => {
+            const input = document.createElement('input');
+            // This has an invalid year that should be caught before past date check
+            input.value = '1800-01-01'; // Old date, but should fail year check first
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            const result = FormValidator.validateDate(input);
+            expect(result).toBe(false);
+            // Should show year range error, not past date error
+            expect(document.getElementById('test_date_error').textContent).toBe('Please enter a valid date');
+        });
+
+        it('should handle edge case dates correctly', () => {
+            const input = document.createElement('input');
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            // Valid date formats (within reasonable year range)
+            const validDates = [
+                '2025-01-01',
+                '2025-12-31',
+                '2024-02-29', // Leap year
+                '1900-01-01', // Edge case: minimum year
+                '9999-12-31'  // Edge case: maximum year
+            ];
+
+            validDates.forEach(validDate => {
+                input.value = validDate;
+                const result = FormValidator.validateDate(input, true);
+                expect(result).toBe(true);
+            });
+        });
+
+        it('should clear error when validation passes', () => {
+            const input = document.createElement('input');
+            input.id = 'test_date';
+            container.appendChild(input);
+
+            // First fail validation
+            input.value = 'invalid-date';
+            FormValidator.validateDate(input);
+            expect(document.getElementById('test_date_error')).not.toBeNull();
+
+            // Then pass validation
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 1);
+            input.value = futureDate.toISOString().split('T')[0];
+            const result = FormValidator.validateDate(input);
+
+            expect(result).toBe(true);
+            expect(document.getElementById('test_date_error')).toBeNull();
+        });
+    });
+
     describe('validateForm', () => {
         it('should validate form with required fields', () => {
             container.innerHTML = `

@@ -34,7 +34,8 @@ export class FormValidator {
      * Show error for a time range selector
      */
     static showTimeRangeError(timeRangeSelector, message) {
-        const errorContainer = timeRangeSelector.querySelector('.error-message');
+        const errorContainer =
+            timeRangeSelector.querySelector('.error-message');
         const startSelect = timeRangeSelector.querySelector('.start-time');
         const endSelect = timeRangeSelector.querySelector('.end-time');
 
@@ -49,7 +50,8 @@ export class FormValidator {
      * Clear error for a time range selector
      */
     static clearTimeRangeError(timeRangeSelector) {
-        const errorContainer = timeRangeSelector.querySelector('.error-message');
+        const errorContainer =
+            timeRangeSelector.querySelector('.error-message');
         const startSelect = timeRangeSelector.querySelector('.start-time');
         const endSelect = timeRangeSelector.querySelector('.end-time');
 
@@ -78,16 +80,27 @@ export class FormValidator {
     /**
      * Validate text length
      */
-    static validateLength(input, minLength = 0, maxLength = null, fieldName = 'This field') {
+    static validateLength(
+        input,
+        minLength = 0,
+        maxLength = null,
+        fieldName = 'This field'
+    ) {
         const value = input.value.trim();
 
         if (value.length < minLength) {
-            this.showFieldError(input, `${fieldName} must be at least ${minLength} characters`);
+            this.showFieldError(
+                input,
+                `${fieldName} must be at least ${minLength} characters`
+            );
             return false;
         }
 
         if (maxLength && value.length > maxLength) {
-            this.showFieldError(input, `${fieldName} cannot exceed ${maxLength} characters`);
+            this.showFieldError(
+                input,
+                `${fieldName} cannot exceed ${maxLength} characters`
+            );
             return false;
         }
 
@@ -97,6 +110,8 @@ export class FormValidator {
 
     /**
      * Validate date field
+     * Note: For HTML input[type="date"], the browser enforces YYYY-MM-DD format
+     * and basic date validity, so we can simplify our validation
      */
     static validateDate(input, allowPastDates = false) {
         const value = input.value;
@@ -106,9 +121,57 @@ export class FormValidator {
             return false;
         }
 
+        // Parse the date - HTML date inputs provide YYYY-MM-DD format
+        const inputDate = new Date(value + 'T00:00:00'); // Add time to avoid timezone issues
+
+        // Check if the date is valid
+        if (isNaN(inputDate.getTime())) {
+            this.showFieldError(input, 'Please enter a valid date');
+            return false;
+        }
+
+        // Check year range (reasonable bounds)
+        const year = inputDate.getFullYear();
+        if (year > 9999 || year < 1900) {
+            this.showFieldError(input, 'Please enter a valid date');
+            return false;
+        }
+
+        // Check if date was auto-corrected (e.g., Feb 30 -> Mar 2)
+        // Only check YYYY-MM-DD format since that's what HTML date inputs use
+        const dateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (dateMatch) {
+            const inputYear = parseInt(dateMatch[1]);
+            const inputMonth = parseInt(dateMatch[2]);
+            const inputDay = parseInt(dateMatch[3]);
+
+            const actualMonth = inputDate.getMonth() + 1;
+            const actualDay = inputDate.getDate();
+
+            // If the parsed date differs from the input, it was auto-corrected
+            if (
+                inputYear !== year ||
+                inputMonth !== actualMonth ||
+                inputDay !== actualDay
+            ) {
+                this.showFieldError(input, 'Please enter a valid date');
+                return false;
+            }
+        }
+
         if (!allowPastDates) {
-            const today = new Date().toISOString().split('T')[0];
-            if (value < today) {
+            // Use integer comparison for dates (YYYYMMDD format) - more reliable than string comparison
+            const today = new Date();
+            const todayInt =
+                today.getFullYear() * 10000 +
+                (today.getMonth() + 1) * 100 +
+                today.getDate();
+            const inputInt =
+                year * 10000 +
+                (inputDate.getMonth() + 1) * 100 +
+                inputDate.getDate();
+
+            if (inputInt < todayInt) {
                 this.showFieldError(input, 'Cannot select a past date');
                 return false;
             }
@@ -131,7 +194,10 @@ export class FormValidator {
 
         // Both times are required for a valid time range
         if (!startTime && !endTime) {
-            this.showFieldError(startTimeInput, 'Please select both start and end times');
+            this.showFieldError(
+                startTimeInput,
+                'Please select both start and end times'
+            );
             return false;
         }
 
@@ -147,7 +213,10 @@ export class FormValidator {
 
         // Validate time logic - start must be before end
         if (startTime >= endTime) {
-            this.showFieldError(endTimeInput, 'End time must be later than start time');
+            this.showFieldError(
+                endTimeInput,
+                'End time must be later than start time'
+            );
             return false;
         }
 
@@ -179,7 +248,10 @@ export class FormValidator {
             this.showFieldError(input, 'Please enter an event name');
             return false;
         } else if (value.length > 255) {
-            this.showFieldError(input, 'Event name cannot exceed 255 characters');
+            this.showFieldError(
+                input,
+                'Event name cannot exceed 255 characters'
+            );
             return false;
         }
 
@@ -269,20 +341,25 @@ export class FormValidator {
         let isValid = true;
 
         // Clear all previous errors
-        form.querySelectorAll('.border-red-500').forEach(el => {
+        form.querySelectorAll('.border-red-500').forEach((el) => {
             el.classList.remove('border-red-500');
         });
-        form.querySelectorAll('[id$="_error"]').forEach(el => {
+        form.querySelectorAll('[id$="_error"]').forEach((el) => {
             el.remove();
         });
 
         // Validate each field based on rules
         for (const [fieldName, fieldRules] of Object.entries(rules)) {
             const input = form.querySelector(`[name="${fieldName}"]`);
-            if (!input) {continue;}
+            if (!input) {
+                continue;
+            }
 
             for (const rule of fieldRules) {
-                if (rule === 'required' && !this.validateRequired(input, fieldName)) {
+                if (
+                    rule === 'required' &&
+                    !this.validateRequired(input, fieldName)
+                ) {
                     isValid = false;
                     break;
                 }
@@ -291,8 +368,10 @@ export class FormValidator {
         }
 
         // Validate time range selectors
-        const timeRangeSelectors = form.querySelectorAll('.time-range-selector');
-        timeRangeSelectors.forEach(selector => {
+        const timeRangeSelectors = form.querySelectorAll(
+            '.time-range-selector'
+        );
+        timeRangeSelectors.forEach((selector) => {
             if (!this.validateTimeRangeSelector(selector)) {
                 isValid = false;
             }
