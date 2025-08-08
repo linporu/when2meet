@@ -97,7 +97,7 @@ server {
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-XSS-Protection "1; mode=block" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self';" always;
 
     # 字元編碼
     charset utf-8;
@@ -269,16 +269,16 @@ add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; prelo
 - **`preload`** - 允許加入瀏覽器預載清單
 
 ```nginx
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self';" always;
 ```
 
 **CSP (Content Security Policy)**：
 
 - **`default-src 'self'`** - 預設只允許同網域資源
-- **`script-src 'self' 'unsafe-inline'`** - JavaScript 來源政策
-- **`style-src 'self' 'unsafe-inline'`** - CSS 來源政策
-
-⚠️ **注意**：`'unsafe-inline'` 降低安全性，生產環境應避免使用
+- **`script-src 'self'`** - 只允許同網域 JavaScript（安全）
+- **`style-src 'self'`** - 只允許同網域 CSS（安全）
+- **`img-src 'self' data:`** - 允許同網域圖片和 data: URI
+- **`font-src 'self'`** - 只允許同網域字型
 
 ### 3.5 Laravel 前端控制器模式
 
