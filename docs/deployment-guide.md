@@ -117,7 +117,7 @@ sudo apt update && sudo apt upgrade -y
 
 # 安裝基礎工具
 sudo apt install -y curl wget git unzip software-properties-common \
-                    apt-transport-https ca-certificates gnupg lsb-release
+                    apt-transport-https ca-certificates gnupg lsb-release vim nano
 ```
 
 ### 2. PHP 8.3 安裝
@@ -140,10 +140,9 @@ php -v
 ### 3. PostgreSQL 16 安裝
 
 ```bash
-# 新增 PostgreSQL 官方倉庫
-sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-sudo apt update
+# 配置 PostgreSQL 官方倉庫（現代化方式）
+sudo apt install -y postgresql-common
+sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
 
 # 安裝 PostgreSQL 16
 sudo apt install -y postgresql-16 postgresql-contrib-16
@@ -185,7 +184,7 @@ composer --version
 
 ```bash
 # 建立 swap 檔案以增加虛擬記憶體（重要！）
-sudo fallocate -l 1G /swapfile
+sudo fallocate -l 2G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
@@ -204,7 +203,37 @@ free -h
 
 ## Phase 3: 手動部署流程
 
-### 1. 建立專案目錄並下載程式碼（精簡部署）
+### 1. 建立專案目錄並下載程式碼
+
+#### 1.1 準備 Git 認證
+
+GitHub 已不再支援密碼驗證，需要使用以下任一方式進行認證：
+
+**方法一：SSH 金鑰（推薦）**
+
+```bash
+# 產生 SSH 金鑰
+ssh-keygen -t ed25519 -C "your-email@example.com"
+
+# 顯示公鑰內容
+cat ~/.ssh/id_ed25519.pub
+```
+
+複製公鑰並加入到 GitHub：
+
+1. 前往 https://github.com/settings/ssh/new
+2. 將公鑰內容貼上並儲存
+
+**方法二：Personal Access Token (PAT)**
+
+建立 PAT：
+
+1. 前往 https://github.com/settings/tokens
+2. 點擊 "Generate new token (classic)"
+3. 選擇 "repo" 權限
+4. 複製並保存 token（只會顯示一次）
+
+#### 1.2 Clone 專案程式碼
 
 ```bash
 # 建立專案目錄
@@ -213,37 +242,32 @@ sudo mkdir -p /var/www/when2meet
 # 設定目錄擁有者
 sudo chown -R $USER:$USER /var/www/when2meet
 
-# 使用 Sparse Checkout 只下載生產環境需要的檔案
-git clone --filter=blob:none --no-checkout https://github.com/linporu/when2meet.git /var/www/when2meet
+# 方法一：使用 SSH（推薦）
+git clone git@github.com:linporu/when2meet.git /var/www/when2meet
+
+# 方法二：使用 PAT
+git clone https://github.com/linporu/when2meet.git /var/www/when2meet
+# Username: your-github-username
+# Password: paste-your-PAT-token-here
 
 # 進入專案目錄
 cd /var/www/when2meet
-
-# 啟用 Sparse Checkout
-git sparse-checkout init --cone
-
-# 設定只包含生產環境必要的檔案和目錄
-git sparse-checkout set \
-  app \
-  bootstrap \
-  config \
-  database/factories \
-  database/migrations \
-  database/seeders \
-  public \
-  resources \
-  routes \
-  storage/app \
-  storage/framework \
-  artisan \
-  composer.json \
-  composer.lock
-
-# 檢出檔案
-git checkout
 ```
 
-### 2. PostgreSQL 資料庫設定
+### 2. 安裝相依套件
+
+```bash
+# 安裝 PHP 後端套件（生產環境優化）
+composer install --no-dev --optimize-autoloader
+```
+
+**⚠️ 前端資產說明**：
+
+- 前端資產（CSS/JS）已在本機預先編譯
+- `/public/build` 目錄已包含在 Git 中，無需在伺服器上編譯
+- 這樣可以節省伺服器資源，避免安裝 Node.js
+
+### 3. PostgreSQL 資料庫設定
 
 ```bash
 # 切換到 postgres 使用者
@@ -264,13 +288,14 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO when2meet_user;
 \q
 ```
 
-### 3. 環境變數設定 (`.env`)
+### 4. 環境變數設定 (`.env`)
 
 ```bash
 # 複製環境設定檔
 cp .env.example .env
 
-# 編輯環境設定（使用 nano 或 vim）
+# 編輯環境設定
+vim .env
 nano .env
 ```
 
@@ -305,7 +330,17 @@ MAIL_MAILER=log
 APP_TIMEZONE=Asia/Taipei
 ```
 
-### 3.1. 檔案權限安全設定
+### 5. 產生應用程式金鑰
+
+```bash
+# 產生 Laravel 應用程式金鑰
+php artisan key:generate
+
+# 檢查 .env 檔案中的 APP_KEY 是否已設定
+grep APP_KEY .env
+```
+
+### 6. 設定檔案權限
 
 **⚠️ 重要：檔案權限設定**
 
@@ -324,58 +359,36 @@ APP_TIMEZONE=Asia/Taipei
 2. **維護便利**：開發者保持檔案擁有權，便於程式碼更新
 3. **敏感檔案保護**：.env 等敏感檔案有更嚴格的權限控制
 
-### 4. 產生應用程式金鑰
-
-```bash
-# 產生 Laravel 應用程式金鑰
-php artisan key:generate
-
-# 檢查 .env 檔案中的 APP_KEY 是否已設定
-grep APP_KEY .env
-```
-
-### 5. 安裝相依套件
-
-```bash
-# 安裝 PHP 後端套件（生產環境優化）
-composer install --no-dev --optimize-autoloader
-```
-
-**⚠️ 前端資產說明**：
-- 前端資產（CSS/JS）已在本機預先編譯
-- `/public/build` 目錄已包含在 Git 中，無需在伺服器上編譯
-- 這樣可以節省伺服器資源，避免安裝 Node.js
-
-### 6. 設定檔案權限（精簡檔案結構優化）
-
 ```bash
 # ⚠️ 重要：採用安全的權限策略
 # 設定專案檔案擁有者為當前使用者，群組為 www-data（網頁伺服器）
 sudo chown -R $USER:www-data /var/www/when2meet
 
 # 設定基本檔案權限
-# 檔案：644 (擁有者可讀寫，群組和其他人只能讀)
 # 目錄：755 (擁有者可讀寫執行，群組和其他人可讀執行)
-sudo find /var/www/when2meet -type f -exec chmod 644 {} \;
 sudo find /var/www/when2meet -type d -exec chmod 755 {} \;
+# 檔案：644 (擁有者可讀寫，群組和其他人只能讀)
+sudo find /var/www/when2meet -type f -exec chmod 644 {} \;
 
 # Laravel 特殊權限：storage 和 bootstrap/cache 需要群組寫入權限
-# 775 權限讓 www-data 群組可以寫入日誌檔案和快取檔案
-sudo chmod -R 775 /var/www/when2meet/storage
-sudo chmod -R 775 /var/www/when2meet/bootstrap/cache
+# storage 目錄結構
+# 目錄：775 權限讓 www-data 群組可以建立/刪除檔案
+sudo find /var/www/when2meet/storage -type d -exec chmod 775 {} \;
+# 檔案：664 權限讓 www-data 群組可以寫入日誌檔案（無執行權限）
+sudo find /var/www/when2meet/storage -type f -exec chmod 664 {} \;
+
+# bootstrap/cache 目錄結構
+# 目錄：775 權限讓 www-data 群組可以建立快取檔案
+sudo find /var/www/when2meet/bootstrap/cache -type d -exec chmod 775 {} \;
+# 檔案：664 權限讓 www-data 群組可以寫入快取檔案（無執行權限）
+sudo find /var/www/when2meet/bootstrap/cache -type f -exec chmod 664 {} \;
+
+# artisan 檔案執行權限（Laravel 命令列工具）
+chmod 755 /var/www/when2meet/artisan
 
 # .env 檔案特殊權限（只有擁有者可讀寫，最高安全性）
 chmod 600 /var/www/when2meet/.env
-
-# 確認 Sparse Checkout 設定檔案權限
-chmod 644 /var/www/when2meet/.git/info/sparse-checkout
 ```
-
-**✅ Sparse Checkout 權限優勢**：
-
-- **減少攻擊面**：測試檔案、開發工具配置不存在於伺服器，無法被攻擊者利用
-- **權限精簡**：只需設定真正需要的檔案權限，降低權限管理複雜度
-- **安全性提升**：敏感開發資訊（如文件檔案）不會暴露在生產環境
 
 ### 7. Laravel 框架設定
 
@@ -390,23 +403,24 @@ php artisan route:clear
 php artisan view:clear
 ```
 
-### 8. **手動執行資料庫遷移（重要步驟）**
+### 8. 手動執行資料庫遷移
 
 ```bash
 # 測試資料庫連線
-php artisan tinker
-# 在 tinker 中執行：DB::connection()->getPdo();
-# 如果沒有錯誤，表示連線成功，輸入 exit 退出
+php artisan tinker --execute='DB::connection()->getPdo(); echo "Laravel database connection successful!";'
 
 # 預覽將要執行的遷移
-php artisan migrate --pretend
+# `--pretend` 只顯示 SQL 語句，不會修改資料庫
+# `--force` 只是跳過生產環境確認提示，不會讓操作變危險
+php artisan migrate --pretend --force
 
 # 確認無誤後，手動執行遷移
 php artisan migrate
 
-# 檢查資料表是否建立成功
-php artisan tinker
-# 在 tinker 中執行：DB::select('SELECT tablename FROM pg_tables WHERE schemaname = \'public\'');
+# 驗證遷移結果
+php artisan migrate:status
+
+# 此外可再用 TablePlus SSH 連線去看狀況
 ```
 
 ### 9. 生產環境效能優化
@@ -433,7 +447,7 @@ php artisan event:cache
 
 ```bash
 # 編輯 PHP-FPM 配置
-sudo nano /etc/php/8.3/fpm/pool.d/www.conf
+sudo vim /etc/php/8.3/fpm/pool.d/www.conf
 ```
 
 調整以下設定（e2-micro 記憶體優化）：
@@ -456,7 +470,7 @@ sudo systemctl restart php8.3-fpm
 
 ```bash
 # 建立網站設定檔
-sudo nano /etc/nginx/sites-available/when2meet
+sudo vim /etc/nginx/sites-available/when2meet
 ```
 
 **Nginx 設定檔內容**：
@@ -544,6 +558,9 @@ sudo systemctl reload nginx
 ### 4. Ubuntu 防火牆設定
 
 ```bash
+# 安裝 UFW 防火牆
+sudo apt install -y ufw
+
 # 啟用 UFW 防火牆
 sudo ufw enable
 
@@ -569,6 +586,14 @@ sudo apt install -y certbot python3-certbot-nginx
 
 # 取得 SSL 憑證（替換為你的網域）
 sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+
+# 如果 Nginx 設定出現問題，可以重新安裝憑證
+# Certbot 會自動添加正確的 SSL 設定到 Nginx 配置檔
+sudo certbot install --cert-name your-domain.com --nginx
+
+# 測試 Nginx 設定並重新載入
+sudo nginx -t
+sudo systemctl reload nginx
 
 # 設定自動更新
 sudo systemctl enable certbot.timer
@@ -634,8 +659,7 @@ curl -I https://your-domain.com
 
 # 測試資料庫連線
 cd /var/www/when2meet
-php artisan tinker
-# 在 tinker 中執行：DB::connection()->getPdo();
+php artisan tinker --execute='DB::connection()->getPdo(); echo "Laravel database connection successful!";'
 
 # 檢查所有服務狀態
 sudo systemctl status nginx php8.3-fpm postgresql

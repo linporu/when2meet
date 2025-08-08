@@ -31,7 +31,7 @@ sudo journalctl -f -u nginx -u php8.3-fpm -u postgresql
 
 ```bash
 # 設定 Laravel 日誌輪轉
-sudo nano /etc/logrotate.d/when2meet
+sudo vim /etc/logrotate.d/when2meet
 ```
 
 日誌輪轉設定：
@@ -61,7 +61,7 @@ sudo nano /etc/logrotate.d/when2meet
 sudo mkdir -p /var/backups/when2meet
 
 # 建立備份腳本
-sudo nano /usr/local/bin/backup-when2meet.sh
+sudo vim /usr/local/bin/backup-when2meet.sh
 ```
 
 備份腳本內容：
@@ -90,13 +90,23 @@ echo "Backup completed: $DATE"
 ### 設定自動化備份
 
 ```bash
+# 安裝 cron 套件
+sudo apt install -y cron
+
+# 啟動並設定開機自動啟動 cron 服務
+sudo systemctl enable cron
+sudo systemctl start cron
+
 # 設定執行權限
 sudo chmod +x /usr/local/bin/backup-when2meet.sh
 
 # 建立 crontab 任務（每日凌晨 2 點備份）
 sudo crontab -e
 # 新增以下行：
-# 0 2 * * * /usr/local/bin/backup-when2meet.sh >> /var/log/backup.log 2>&1
+0 2 * * * /usr/local/bin/backup-when2meet.sh >> /var/log/backup.log 2>&1
+
+# 確認 cron 服務已啟動
+sudo systemctl status cron
 ```
 
 ---
@@ -107,7 +117,7 @@ sudo crontab -e
 
 ```bash
 # 建立監控腳本
-sudo nano /usr/local/bin/monitor-resources.sh
+sudo vim /usr/local/bin/monitor-resources.sh
 ```
 
 監控腳本內容：
@@ -143,10 +153,13 @@ echo "==========================================\n"
 # 設定執行權限
 sudo chmod +x /usr/local/bin/monitor-resources.sh
 
+# 確認 cron 服務已啟動
+sudo systemctl status cron
+
 # 設定每小時執行監控
 sudo crontab -e
 # 新增以下行：
-# 0 * * * * /usr/local/bin/monitor-resources.sh >> /var/log/resource-monitor.log 2>&1
+0 * * * * /usr/local/bin/monitor-resources.sh >> /var/log/resource-monitor.log 2>&1
 ```
 
 ---
@@ -155,50 +168,56 @@ sudo crontab -e
 
 ### 每週檢查
 
-1. **系統資源使用狀況**
-   ```bash
-   # 檢查記憶體和磁碟使用
-   free -h && df -h
-   
-   # 檢查系統負載
-   uptime
-   ```
+**系統資源使用狀況**
 
-2. **服務狀態檢查**
-   ```bash
-   sudo systemctl status nginx php8.3-fpm postgresql
-   ```
+```bash
+# 檢查記憶體和磁碟使用
+free -h && df -h
+
+# 檢查系統負載
+uptime
+```
+
+**服務狀態檢查**
+
+```bash
+sudo systemctl status nginx php8.3-fpm postgresql
+```
 
 ### 每月檢查
 
-1. **備份檔案完整性**
-   ```bash
-   # 檢查備份目錄
-   ls -la /var/backups/when2meet/
-   
-   # 測試最新的資料庫備份
-   sudo -u postgres psql -c "\l" # 列出所有資料庫
-   ```
+**備份檔案完整性**
 
-2. **日誌檔案大小**
-   ```bash
-   # 檢查日誌檔案大小
-   du -sh /var/log/nginx/
-   du -sh /var/www/when2meet/storage/logs/
-   ```
+```bash
+# 檢查備份目錄
+ls -la /var/backups/when2meet/
+
+# 測試最新的資料庫備份
+sudo -u postgres psql -c "\l" # 列出所有資料庫
+```
+
+**日誌檔案大小**
+
+```bash
+# 檢查日誌檔案大小
+du -sh /var/log/nginx/
+du -sh /var/www/when2meet/storage/logs/
+```
 
 ### 定期更新
 
-1. **系統套件更新**
-   ```bash
-   sudo apt update && sudo apt upgrade
-   ```
+**系統套件更新**
 
-2. **Laravel 框架更新**
-   ```bash
-   cd /var/www/when2meet
-   composer update
-   ```
+```bash
+sudo apt update && sudo apt upgrade
+```
+
+**Laravel 框架更新**
+
+```bash
+cd /var/www/when2meet
+composer update
+```
 
 ---
 
@@ -212,12 +231,11 @@ cd /var/www/when2meet
 # 1. 進入維護模式
 php artisan down
 
-# 2. 拉取最新程式碼（Sparse Checkout 自動過濾）
+# 2. 拉取最新程式碼
 git pull origin main
 
 # 3. 更新套件
 composer install --no-dev --optimize-autoloader
-pnpm install && pnpm run build
 
 # 4. 手動執行資料庫遷移（如果有）
 php artisan migrate
@@ -232,52 +250,6 @@ sudo systemctl restart php8.3-fpm
 
 # 7. 結束維護模式
 php artisan up
-```
-
-### 5.1 Git Sparse Checkout 維護
-
-#### 檢查目前設定
-
-```bash
-# 檢查 sparse-checkout 狀態
-git sparse-checkout list
-
-# 確認目前工作目錄中的檔案
-ls -la
-
-# 檢查 Git 狀態（確認沒有遺漏的檔案）
-git status
-```
-
-#### 日常維護指令
-
-```bash
-# 更新程式碼（只更新已設定的檔案）
-git pull origin main
-
-# 如果需要臨時加入新的檔案或目錄
-git sparse-checkout add docs/emergency-guide.md
-git checkout HEAD -- docs/emergency-guide.md
-
-# 重新設定完整的 sparse-checkout（如果需要）
-git sparse-checkout reapply
-
-# 檢查被排除的檔案（用於確認設定正確）
-git ls-files --others --ignored --exclude-standard
-```
-
-#### 監控精簡部署效果
-
-```bash
-# 檢查磁碟使用量
-du -sh /var/www/when2meet
-
-# 比較完整 clone 和精簡部署的差異
-echo "精簡部署檔案數量："
-find /var/www/when2meet -type f | wc -l
-
-# 檢查是否有不應該存在的開發檔案
-ls -la /var/www/when2meet/ | grep -E "(test|spec|\.md$|config\.js$)" || echo "✅ 沒有發現開發檔案"
 ```
 
 ---

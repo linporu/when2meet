@@ -45,25 +45,82 @@ sudo php-fpm8.3 -t
 # 檢查 PostgreSQL 狀態
 sudo systemctl status postgresql
 
-# 測試資料庫連線
+# 測試 PostgreSQL 本身是否運作
 sudo -u postgres psql -c "SELECT version();"
 
-# 檢查 Laravel 設定
+# **Laravel 資料庫連線測試（建議方法）**
 cd /var/www/when2meet
-php artisan tinker
-# 在 tinker 中執行：DB::connection()->getPdo();
+php artisan tinker --execute='DB::connection()->getPdo(); echo "Laravel database connection successful!";'
 ```
 
-**解決方案**：
+**常見錯誤訊息與診斷**：
+
+**✅ 成功輸出**：
+```
+Laravel database connection successful!
+```
+
+**❌ 失敗輸出範例**：
+
+1. **"Connection refused"**
+   ```
+   SQLSTATE[08006] [7] could not connect to server: Connection refused
+   ```
+   **原因**：PostgreSQL 服務未啟動
+   **解決**：`sudo systemctl start postgresql`
+
+2. **"Access denied" / "Authentication failed"**
+   ```
+   SQLSTATE[08006] [7] FATAL: password authentication failed for user "when2meet_user"
+   ```
+   **原因**：帳號密碼錯誤或 .env 設定錯誤
+   **解決**：檢查 `.env` 檔案的 `DB_USERNAME` 和 `DB_PASSWORD`
+
+3. **"Database does not exist"**
+   ```
+   SQLSTATE[08006] [7] FATAL: database "when2meet" does not exist
+   ```
+   **原因**：資料庫名稱錯誤或資料庫未建立
+   **解決**：檢查 `.env` 檔案的 `DB_DATABASE` 或重新建立資料庫
+
+4. **"Class 'PDO' not found"**
+   ```
+   Class 'PDO' not found
+   ```
+   **原因**：PHP 缺少 pdo_pgsql 擴充套件
+   **解決**：`sudo apt install php8.3-pgsql && sudo systemctl restart php8.3-fpm`
+
+**進階診斷指令**：
 ```bash
-# 重新啟動 PostgreSQL
-sudo systemctl restart postgresql
+# 檢查 PHP PostgreSQL 擴充套件
+php -m | grep -i pgsql
 
 # 檢查 .env 檔案中的資料庫設定
 grep -E "^DB_" /var/www/when2meet/.env
 
-# 測試具體的資料庫連線
+# 測試直接資料庫連線（使用 .env 中的憑證）
 sudo -u postgres psql -h 127.0.0.1 -U when2meet_user -d when2meet
+
+# 檢查 PostgreSQL 日誌
+sudo tail -n 20 /var/log/postgresql/postgresql-16-main.log
+```
+
+**解決方案**：
+```bash
+# 重新啟動相關服務
+sudo systemctl restart postgresql php8.3-fpm
+
+# 如果是權限問題，重新授權
+sudo -u postgres psql -d when2meet -c "
+  GRANT ALL PRIVILEGES ON DATABASE when2meet TO when2meet_user;
+  GRANT ALL ON SCHEMA public TO when2meet_user;
+  GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO when2meet_user;
+  GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO when2meet_user;
+"
+
+# 清除 Laravel 設定快取
+cd /var/www/when2meet
+php artisan config:clear
 ```
 
 ---
@@ -282,122 +339,6 @@ php artisan up
 
 ---
 
-## 4. Git Sparse Checkout 故障排除
-
-### 問題：更新後缺少檔案
-
-**症狀**：`git pull` 後發現需要的檔案不存在
-
-**診斷步驟**：
-```bash
-# 檢查 sparse-checkout 設定
-git sparse-checkout list
-
-# 檢查檔案是否在 repository 中
-git ls-tree -r HEAD | grep "missing-file"
-
-# 檢查 Git 狀態
-git status
-```
-
-**解決方案**：
-```bash
-# 將缺少的檔案加入 sparse-checkout
-git sparse-checkout add path/to/missing-file
-
-# 檢出該檔案
-git checkout HEAD -- path/to/missing-file
-
-# 或重新應用 sparse-checkout
-git sparse-checkout reapply
-```
-
-### 問題：Sparse Checkout 設定損壞
-
-**症狀**：無法正常更新程式碼，或檔案狀態異常
-
-**診斷步驟**：
-```bash
-# 檢查 sparse-checkout 檔案內容
-cat .git/info/sparse-checkout
-
-# 檢查 sparse-checkout 模式
-git config core.sparseCheckout
-```
-
-**解決方案**：
-```bash
-# 重新初始化 sparse-checkout
-git sparse-checkout init --cone
-
-# 重新設定目錄清單
-git sparse-checkout set \
-  app \
-  bootstrap \
-  config \
-  database/factories \
-  database/migrations \
-  database/seeders \
-  public \
-  resources \
-  routes \
-  storage/app \
-  storage/framework \
-  artisan \
-  composer.json \
-  composer.lock \
-  package.json \
-  pnpm-lock.yaml
-
-# 強制重新檢出
-git read-tree -m -u HEAD
-```
-
-### 緊急情況：完整檔案復原
-
-如果需要臨時存取完整檔案進行故障排除：
-
-```bash
-# 備份目前的 sparse-checkout 設定
-cp .git/info/sparse-checkout .git/info/sparse-checkout.backup
-
-# 停用 sparse-checkout（存取所有檔案）
-git sparse-checkout disable
-git checkout .
-
-# 進行故障排除...
-
-# 完成後恢復精簡模式
-git sparse-checkout init --cone
-cp .git/info/sparse-checkout.backup .git/info/sparse-checkout
-git sparse-checkout reapply
-```
-
-### 檢查精簡部署完整性
-
-定期檢查以確保部署正確：
-
-```bash
-# 檢查不應該存在的開發檔案
-if ls -la | grep -E "(test|spec|README\.md|docs)" > /dev/null; then
-    echo "⚠️  發現不應該存在的開發檔案"
-    ls -la | grep -E "(test|spec|README\.md|docs)"
-else
-    echo "✅ 精簡部署檢查通過"
-fi
-
-# 檢查必要檔案是否存在
-required_files=("app" "config" "public" "artisan" "composer.json")
-for file in "${required_files[@]}"; do
-    if [[ ! -e "$file" ]]; then
-        echo "❌ 缺少必要檔案: $file"
-    else
-        echo "✅ $file 存在"
-    fi
-done
-```
-
----
 
 ## 5. 預防性檢查清單
 
@@ -407,14 +348,12 @@ done
 - [ ] 檢查錯誤日誌是否有異常
 - [ ] 確認網站可正常存取
 - [ ] 檢查資料庫連線正常
-- [ ] 檢查精簡部署完整性
 
 ### 每週檢查
 - [ ] 檢查磁碟空間使用率 (< 80%)
 - [ ] 檢查記憶體使用率 (< 80%)
 - [ ] 檢查系統負載是否正常
 - [ ] 確認備份任務正常執行
-- [ ] 驗證 sparse-checkout 設定正確
 
 ### 每月檢查
 - [ ] 更新系統套件
@@ -424,7 +363,7 @@ done
 
 ---
 
-## 5. 常用診斷指令速查
+## 6. 常用診斷指令速查
 
 ```bash
 # 快速服務重啟
