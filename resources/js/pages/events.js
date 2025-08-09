@@ -21,7 +21,9 @@ document.addEventListener('DOMContentLoaded', function () {
  */
 function initEventForm() {
     const form = DOMHelpers.querySelector('#event-form');
-    if (!form) {return;}
+    if (!form) {
+        return;
+    }
 
     ErrorHandler.safeExecute(() => {
         setupFormValidation(form);
@@ -44,15 +46,25 @@ function setupFormValidation() {
     }
 
     if (dateInput) {
+        // Use both blur and change events to ensure validation triggers in all cases
+        // blur: when user leaves the input field (important for manual input)
+        // change: when date picker selection changes
+        dateInput.addEventListener('blur', () => validateDate(dateInput));
         dateInput.addEventListener('change', () => validateDate(dateInput));
+        dateInput.addEventListener('input', () => validateDate(dateInput));
+
         // Set minimum date to today
         const today = new Date().toISOString().split('T')[0];
         dateInput.min = today;
     }
 
     if (startTimeInput && endTimeInput) {
-        startTimeInput.addEventListener('change', () => validateTimeRange(startTimeInput, endTimeInput));
-        endTimeInput.addEventListener('change', () => validateTimeRange(startTimeInput, endTimeInput));
+        startTimeInput.addEventListener('change', () =>
+            validateTimeRange(startTimeInput, endTimeInput)
+        );
+        endTimeInput.addEventListener('change', () =>
+            validateTimeRange(startTimeInput, endTimeInput)
+        );
     }
 }
 
@@ -71,45 +83,67 @@ function setupFormSubmission(form) {
  * Validate event name using FormValidator utility
  */
 function validateEventName(nameInput) {
-    return ErrorHandler.safeExecute(() => {
-        return FormValidator.validateEventName(nameInput);
-    }, 'Event Name Validation', false);
+    return ErrorHandler.safeExecute(
+        () => {
+            return FormValidator.validateEventName(nameInput);
+        },
+        'Event Name Validation',
+        false
+    );
 }
 
 /**
  * Validate date using FormValidator utility
  */
 function validateDate(dateInput) {
-    return ErrorHandler.safeExecute(() => {
-        return FormValidator.validateDate(dateInput, false);
-    }, 'Date Validation', false);
+    return ErrorHandler.safeExecute(
+        () => {
+            return FormValidator.validateDate(dateInput, false);
+        },
+        'Date Validation',
+        false
+    );
 }
 
 /**
  * Validate time range using FormValidator utility
  */
 function validateTimeRange(startTimeInput, endTimeInput) {
-    return ErrorHandler.safeExecute(() => {
-        return FormValidator.validateTimeRange(startTimeInput, endTimeInput);
-    }, 'Time Range Validation', false);
+    return ErrorHandler.safeExecute(
+        () => {
+            return FormValidator.validateTimeRange(
+                startTimeInput,
+                endTimeInput
+            );
+        },
+        'Time Range Validation',
+        false
+    );
 }
 
 /**
  * Validate the entire event form
  */
 function validateEventForm() {
-    return ErrorHandler.safeExecute(() => {
-        const nameInput = DOMHelpers.querySelector('#event_name');
-        const dateInput = DOMHelpers.querySelector('#date');
-        const startTimeInput = DOMHelpers.querySelector('#start_time');
-        const endTimeInput = DOMHelpers.querySelector('#end_time');
+    return ErrorHandler.safeExecute(
+        () => {
+            const nameInput = DOMHelpers.querySelector('#event_name');
+            const dateInput = DOMHelpers.querySelector('#date');
+            const startTimeInput = DOMHelpers.querySelector('#start_time');
+            const endTimeInput = DOMHelpers.querySelector('#end_time');
 
-        const isNameValid = validateEventName(nameInput);
-        const isDateValid = validateDate(dateInput);
-        const isTimeRangeValid = validateTimeRange(startTimeInput, endTimeInput);
+            const isNameValid = validateEventName(nameInput);
+            const isDateValid = validateDate(dateInput);
+            const isTimeRangeValid = validateTimeRange(
+                startTimeInput,
+                endTimeInput
+            );
 
-        return isNameValid && isDateValid && isTimeRangeValid;
-    }, 'Event Form Validation', false);
+            return isNameValid && isDateValid && isTimeRangeValid;
+        },
+        'Event Form Validation',
+        false
+    );
 }
 
 /**
@@ -120,14 +154,15 @@ function initTimezoneDisplay() {
     return ErrorHandler.safeExecute(() => {
         // Check if there are timezone conversion elements on the page
         const timezoneElements = document.querySelectorAll('.timezone-display');
-        if (timezoneElements.length === 0) {return;}
+        if (timezoneElements.length === 0) {
+            return;
+        }
 
         // Create a TimezoneConverter instance
         const converter = new TimezoneConverter();
 
         // Initialize page timezone conversion
         converter.initializePageTimezone();
-
     }, 'Timezone Display Initialization');
 }
 

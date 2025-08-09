@@ -109,69 +109,64 @@ export class FormValidator {
     }
 
     /**
-     * Validate date field
-     * Note: For HTML input[type="date"], the browser enforces YYYY-MM-DD format
-     * and basic date validity, so we can simplify our validation
+     * Validate date field with strict validation
+     * Requirements: not empty, year <= 2200, valid month/day, not before today
      */
     static validateDate(input, allowPastDates = false) {
         const value = input.value;
 
+        // 1. Cannot be empty
         if (!value) {
             this.showFieldError(input, 'Please enter a valid date');
             return false;
         }
 
-        // Parse the date - HTML date inputs provide YYYY-MM-DD format
-        const inputDate = new Date(value + 'T00:00:00'); // Add time to avoid timezone issues
+        // Strict format validation: YYYY-MM-DD only
+        const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+        const match = value.match(datePattern);
 
-        // Check if the date is valid
-        if (isNaN(inputDate.getTime())) {
+        if (!match) {
             this.showFieldError(input, 'Please enter a valid date');
             return false;
         }
 
-        // Check year range (reasonable bounds)
-        const year = inputDate.getFullYear();
+        const year = parseInt(match[1]);
+        const month = parseInt(match[2]);
+        const day = parseInt(match[3]);
+
+        // 2. Year must be within 2200
         if (year > 2200) {
             this.showFieldError(input, 'Please enter a valid date');
             return false;
         }
 
-        // Check if date was auto-corrected (e.g., Feb 30 -> Mar 2)
-        // Only check YYYY-MM-DD format since that's what HTML date inputs use
-        const dateMatch = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-        if (dateMatch) {
-            const inputYear = parseInt(dateMatch[1]);
-            const inputMonth = parseInt(dateMatch[2]);
-            const inputDay = parseInt(dateMatch[3]);
-
-            const actualMonth = inputDate.getMonth() + 1;
-            const actualDay = inputDate.getDate();
-
-            // If the parsed date differs from the input, it was auto-corrected
-            if (
-                inputYear !== year ||
-                inputMonth !== actualMonth ||
-                inputDay !== actualDay
-            ) {
-                this.showFieldError(input, 'Please enter a valid date');
-                return false;
-            }
+        // 3. Month must be 1-12
+        if (month < 1 || month > 12) {
+            this.showFieldError(input, 'Please enter a valid date');
+            return false;
         }
 
-        if (!allowPastDates) {
-            // Use integer comparison for dates (YYYYMMDD format) - more reliable than string comparison
-            const today = new Date();
-            const todayInt =
-                today.getFullYear() * 10000 +
-                (today.getMonth() + 1) * 100 +
-                today.getDate();
-            const inputInt =
-                year * 10000 +
-                (inputDate.getMonth() + 1) * 100 +
-                inputDate.getDate();
+        // 4. Day must be 1 to max day of the month (considering leap years)
+        const daysInMonth = this._getDaysInMonth(year, month);
+        if (day < 1 || day > daysInMonth) {
+            this.showFieldError(input, 'Please enter a valid date');
+            return false;
+        }
 
-            if (inputInt < todayInt) {
+        // 5. Date cannot be before today (today is allowed)
+        if (!allowPastDates) {
+            const today = new Date();
+            const inputDate = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+
+            // Compare only the date part (ignore time)
+            const todayDateOnly = new Date(
+                today.getFullYear(),
+                today.getMonth(),
+                today.getDate()
+            );
+
+            if (inputDate < todayDateOnly) {
+                // Only dates before today are considered past dates
                 this.showFieldError(input, 'Please enter a valid date');
                 return false;
             }
@@ -378,5 +373,27 @@ export class FormValidator {
         });
 
         return isValid;
+    }
+
+    /**
+     * Helper method to get days in a specific month/year
+     * Handles leap years correctly
+     */
+    static _getDaysInMonth(year, month) {
+        const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+        // Handle February in leap years
+        if (month === 2 && this._isLeapYear(year)) {
+            return 29;
+        }
+
+        return daysInMonth[month - 1];
+    }
+
+    /**
+     * Helper method to check if a year is a leap year
+     */
+    static _isLeapYear(year) {
+        return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
     }
 }
