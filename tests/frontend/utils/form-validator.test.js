@@ -300,7 +300,7 @@ describe('FormValidator', () => {
 
             const result = FormValidator.validateDate(input);
             expect(result).toBe(false);
-            expect(document.getElementById('test_date_error').textContent).toBe('Please select a date');
+            expect(document.getElementById('test_date_error').textContent).toBe('Please enter a valid date');
         });
 
         it('should return false for dates with year outside reasonable range', () => {
@@ -310,7 +310,7 @@ describe('FormValidator', () => {
 
             const invalidYearDates = [
                 '1800-01-01', // Too old
-                '10000-01-01' // Too far in future (but HTML won't accept this anyway)
+                '2201-01-01' // Too far in future
             ];
 
             invalidYearDates.forEach(invalidDate => {
@@ -351,7 +351,7 @@ describe('FormValidator', () => {
 
             const result = FormValidator.validateDate(input);
             expect(result).toBe(false);
-            expect(document.getElementById('test_date_error').textContent).toBe('Cannot select a past date');
+            expect(document.getElementById('test_date_error').textContent).toBe('Please enter a valid date');
         });
 
         it('should return true for past date when allowPastDates is true', () => {
@@ -390,7 +390,7 @@ describe('FormValidator', () => {
                 '2025-12-31',
                 '2024-02-29', // Leap year
                 '1900-01-01', // Edge case: minimum year
-                '9999-12-31'  // Edge case: maximum year
+                '2200-12-31'  // Edge case: maximum year
             ];
 
             validDates.forEach(validDate => {

@@ -121,9 +121,9 @@ describe('UpdateAvailabilityRequest Validation', function () {
 
             expect($messages['participant_name.required'])->toBe('Please enter your name.');
             expect($messages['participant_name.string'])->toBe('Your name must be a valid text.');
-            expect($messages['participant_name.max'])->toBe('Your name cannot exceed 255 characters.');
-            expect($messages['availability.*.*.start_time.date_format'])->toBe('Start time must be in HH:MM format.');
-            expect($messages['availability.*.*.end_time.date_format'])->toBe('End time must be in HH:MM format.');
+            expect($messages['participant_name.max'])->toBe('Your name is too long.');
+            expect($messages['availability.*.*.start_time.date_format'])->toBe('Please enter a valid start time.');
+            expect($messages['availability.*.*.end_time.date_format'])->toBe('Please enter a valid end time.');
         });
     });
 

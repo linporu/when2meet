@@ -23,26 +23,14 @@ class StoreEventRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'event_name' => [
-                'required',
-                'string',
-                'max:255',
-                'min:1',
-            ],
-            'date' => [
-                'required',
-                'date',
-                'after_or_equal:today',
-            ],
-            'start_time' => [
-                'required',
-                'date_format:H:i',
-            ],
-            'end_time' => [
-                'required',
-                'date_format:H:i',
-                'after:start_time',
-            ],
+            // Event name validation: max:255 characters for database field limitation
+            'event_name' => 'required|string|max:255|min:1',
+            // Date validation: must be today or future, max year 2200
+            'date' => 'required|date|after_or_equal:today|before_or_equal:2200-12-31',
+            // Time validation: H:i format required (24-hour format)
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            // Timezone validation: limited to supported timezones
             'timezone' => [
                 'required',
                 'string',
@@ -69,18 +57,19 @@ class StoreEventRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'event_name.required' => '活動名稱為必填項目',
-            'event_name.max' => '活動名稱不能超過 255 個字符',
-            'date.required' => '日期為必填項目',
-            'date.date' => '請選擇有效的日期',
-            'date.after_or_equal' => '不能選擇過去的日期',
-            'start_time.required' => '開始時間為必填項目',
-            'start_time.date_format' => '開始時間格式不正確',
-            'end_time.required' => '結束時間為必填項目',
-            'end_time.date_format' => '結束時間格式不正確',
-            'end_time.after' => '結束時間必須晚於開始時間',
-            'timezone.required' => '時區為必填項目',
-            'timezone.in' => '請選擇有效的時區',
+            'event_name.required' => 'Event name is required',
+            'event_name.max' => 'Event name is too long',
+            'date.required' => 'Please enter a valid date',
+            'date.date' => 'Please enter a valid date',
+            'date.after_or_equal' => 'Please enter a valid date',
+            'date.before_or_equal' => 'Please enter a valid date',
+            'start_time.required' => 'Start time is required',
+            'start_time.date_format' => 'Please enter a valid start time',
+            'end_time.required' => 'End time is required',
+            'end_time.date_format' => 'Please enter a valid end time',
+            'end_time.after' => 'End time must be later than start time',
+            'timezone.required' => 'Timezone is required',
+            'timezone.in' => 'Please select a valid timezone',
         ];
     }
 }

@@ -40,9 +40,9 @@ class UpdateAvailabilityRequest extends FormRequest
         return [
             'participant_name.required' => 'Please enter your name.',
             'participant_name.string' => 'Your name must be a valid text.',
-            'participant_name.max' => 'Your name cannot exceed 255 characters.',
-            'availability.*.*.start_time.date_format' => 'Start time must be in HH:MM format.',
-            'availability.*.*.end_time.date_format' => 'End time must be in HH:MM format.',
+            'participant_name.max' => 'Your name is too long.',
+            'availability.*.*.start_time.date_format' => 'Please enter a valid start time.',
+            'availability.*.*.end_time.date_format' => 'Please enter a valid end time.',
         ];
     }
 
