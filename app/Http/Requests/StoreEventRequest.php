@@ -23,27 +23,14 @@ class StoreEventRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'event_name' => [
-                'required',
-                'string',
-                'max:255',
-                'min:1',
-            ],
-            'date' => [
-                'required',
-                'date',
-                'after_or_equal:today',
-                'before_or_equal:2200-12-31',
-            ],
-            'start_time' => [
-                'required',
-                'date_format:H:i',
-            ],
-            'end_time' => [
-                'required',
-                'date_format:H:i',
-                'after:start_time',
-            ],
+            // Event name validation: max:255 characters for database field limitation
+            'event_name' => 'required|string|max:255|min:1',
+            // Date validation: must be today or future, max year 2200
+            'date' => 'required|date|after_or_equal:today|before_or_equal:2200-12-31',
+            // Time validation: H:i format required (24-hour format)
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            // Timezone validation: limited to supported timezones
             'timezone' => [
                 'required',
                 'string',
@@ -71,15 +58,15 @@ class StoreEventRequest extends FormRequest
     {
         return [
             'event_name.required' => 'Event name is required',
-            'event_name.max' => 'Event name cannot exceed 255 characters',
+            'event_name.max' => 'Event name is too long',
             'date.required' => 'Please enter a valid date',
             'date.date' => 'Please enter a valid date',
             'date.after_or_equal' => 'Please enter a valid date',
             'date.before_or_equal' => 'Please enter a valid date',
             'start_time.required' => 'Start time is required',
-            'start_time.date_format' => 'Start time must be in HH:MM format',
+            'start_time.date_format' => 'Please enter a valid start time',
             'end_time.required' => 'End time is required',
-            'end_time.date_format' => 'End time must be in HH:MM format',
+            'end_time.date_format' => 'Please enter a valid end time',
             'end_time.after' => 'End time must be later than start time',
             'timezone.required' => 'Timezone is required',
             'timezone.in' => 'Please select a valid timezone',

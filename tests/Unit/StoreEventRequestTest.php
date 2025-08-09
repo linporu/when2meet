@@ -241,15 +241,15 @@ describe('StoreEventRequest Validation', function () {
 
             // Test all expected English messages
             expect($messages['event_name.required'])->toBe('Event name is required');
-            expect($messages['event_name.max'])->toBe('Event name cannot exceed 255 characters');
+            expect($messages['event_name.max'])->toBe('Event name is too long');
             expect($messages['date.required'])->toBe('Please enter a valid date');
             expect($messages['date.date'])->toBe('Please enter a valid date');
             expect($messages['date.after_or_equal'])->toBe('Please enter a valid date');
             expect($messages['date.before_or_equal'])->toBe('Please enter a valid date');
             expect($messages['start_time.required'])->toBe('Start time is required');
-            expect($messages['start_time.date_format'])->toBe('Start time must be in HH:MM format');
+            expect($messages['start_time.date_format'])->toBe('Please enter a valid start time');
             expect($messages['end_time.required'])->toBe('End time is required');
-            expect($messages['end_time.date_format'])->toBe('End time must be in HH:MM format');
+            expect($messages['end_time.date_format'])->toBe('Please enter a valid end time');
             expect($messages['end_time.after'])->toBe('End time must be later than start time');
             expect($messages['timezone.required'])->toBe('Timezone is required');
             expect($messages['timezone.in'])->toBe('Please select a valid timezone');
