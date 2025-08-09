@@ -117,7 +117,7 @@ export class FormValidator {
         const value = input.value;
 
         if (!value) {
-            this.showFieldError(input, 'Please select a date');
+            this.showFieldError(input, 'Please enter a valid date');
             return false;
         }
 
@@ -172,7 +172,7 @@ export class FormValidator {
                 inputDate.getDate();
 
             if (inputInt < todayInt) {
-                this.showFieldError(input, 'Cannot select a past date');
+                this.showFieldError(input, 'Please enter a valid date');
                 return false;
             }
         }

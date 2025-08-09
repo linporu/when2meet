@@ -205,24 +205,24 @@ describe('StoreEventRequest Validation', function () {
         });
     });
 
-    describe('User Experience - Traditional Chinese Error Messages', function () {
-        it('provides helpful error messages in Traditional Chinese', function () {
+    describe('User Experience - English Error Messages', function () {
+        it('provides helpful error messages in English', function () {
             $request = new StoreEventRequest;
             $messages = $request->messages();
 
-            // Test all expected Traditional Chinese messages
-            expect($messages['event_name.required'])->toBe('活動名稱為必填項目');
-            expect($messages['event_name.max'])->toBe('活動名稱不能超過 255 個字符');
-            expect($messages['date.required'])->toBe('日期為必填項目');
-            expect($messages['date.date'])->toBe('請選擇有效的日期');
-            expect($messages['date.after_or_equal'])->toBe('不能選擇過去的日期');
-            expect($messages['start_time.required'])->toBe('開始時間為必填項目');
-            expect($messages['start_time.date_format'])->toBe('開始時間格式不正確');
-            expect($messages['end_time.required'])->toBe('結束時間為必填項目');
-            expect($messages['end_time.date_format'])->toBe('結束時間格式不正確');
-            expect($messages['end_time.after'])->toBe('結束時間必須晚於開始時間');
-            expect($messages['timezone.required'])->toBe('時區為必填項目');
-            expect($messages['timezone.in'])->toBe('請選擇有效的時區');
+            // Test all expected English messages
+            expect($messages['event_name.required'])->toBe('Event name is required');
+            expect($messages['event_name.max'])->toBe('Event name cannot exceed 255 characters');
+            expect($messages['date.required'])->toBe('Please enter a valid date');
+            expect($messages['date.date'])->toBe('Please enter a valid date');
+            expect($messages['date.after_or_equal'])->toBe('Please enter a valid date');
+            expect($messages['start_time.required'])->toBe('Start time is required');
+            expect($messages['start_time.date_format'])->toBe('Start time must be in HH:MM format');
+            expect($messages['end_time.required'])->toBe('End time is required');
+            expect($messages['end_time.date_format'])->toBe('End time must be in HH:MM format');
+            expect($messages['end_time.after'])->toBe('End time must be later than start time');
+            expect($messages['timezone.required'])->toBe('Timezone is required');
+            expect($messages['timezone.in'])->toBe('Please select a valid timezone');
         });
 
         it('validates error messages help users understand business rules', function () {
@@ -239,7 +239,7 @@ describe('StoreEventRequest Validation', function () {
             ];
 
             $validator = Validator::make($pastDateData, $rules, $messages);
-            expect($validator->errors()->get('date')[0])->toBe('不能選擇過去的日期');
+            expect($validator->errors()->get('date')[0])->toBe('Please enter a valid date');
 
             // Test end time validation message
             $invalidTimeData = [
@@ -251,7 +251,7 @@ describe('StoreEventRequest Validation', function () {
             ];
 
             $validator2 = Validator::make($invalidTimeData, $rules, $messages);
-            expect($validator2->errors()->get('end_time')[0])->toBe('結束時間必須晚於開始時間');
+            expect($validator2->errors()->get('end_time')[0])->toBe('End time must be later than start time');
         });
     });
 

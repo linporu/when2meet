@@ -300,7 +300,7 @@ describe('FormValidator', () => {
 
             const result = FormValidator.validateDate(input);
             expect(result).toBe(false);
-            expect(document.getElementById('test_date_error').textContent).toBe('Please select a date');
+            expect(document.getElementById('test_date_error').textContent).toBe('Please enter a valid date');
         });
 
         it('should return false for dates with year outside reasonable range', () => {
@@ -351,7 +351,7 @@ describe('FormValidator', () => {
 
             const result = FormValidator.validateDate(input);
             expect(result).toBe(false);
-            expect(document.getElementById('test_date_error').textContent).toBe('Cannot select a past date');
+            expect(document.getElementById('test_date_error').textContent).toBe('Please enter a valid date');
         });
 
         it('should return true for past date when allowPastDates is true', () => {

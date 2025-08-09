@@ -69,18 +69,18 @@ class StoreEventRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'event_name.required' => '活動名稱為必填項目',
-            'event_name.max' => '活動名稱不能超過 255 個字符',
-            'date.required' => '日期為必填項目',
-            'date.date' => '請選擇有效的日期',
-            'date.after_or_equal' => '不能選擇過去的日期',
-            'start_time.required' => '開始時間為必填項目',
-            'start_time.date_format' => '開始時間格式不正確',
-            'end_time.required' => '結束時間為必填項目',
-            'end_time.date_format' => '結束時間格式不正確',
-            'end_time.after' => '結束時間必須晚於開始時間',
-            'timezone.required' => '時區為必填項目',
-            'timezone.in' => '請選擇有效的時區',
+            'event_name.required' => 'Event name is required',
+            'event_name.max' => 'Event name cannot exceed 255 characters',
+            'date.required' => 'Please enter a valid date',
+            'date.date' => 'Please enter a valid date',
+            'date.after_or_equal' => 'Please enter a valid date',
+            'start_time.required' => 'Start time is required',
+            'start_time.date_format' => 'Start time must be in HH:MM format',
+            'end_time.required' => 'End time is required',
+            'end_time.date_format' => 'End time must be in HH:MM format',
+            'end_time.after' => 'End time must be later than start time',
+            'timezone.required' => 'Timezone is required',
+            'timezone.in' => 'Please select a valid timezone',
         ];
     }
 }
