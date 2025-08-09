@@ -119,6 +119,35 @@ describe('StoreEventRequest Validation', function () {
             expect($validator3->errors()->has('date'))->toBeFalse();
         });
 
+        it('validates date must not exceed year 2200', function () {
+            $rules = (new StoreEventRequest)->rules();
+
+            // Test date beyond 2200 (should fail)
+            $tooFarFutureData = [
+                'event_name' => 'Too Far Future Meeting',
+                'date' => '2201-01-01',
+                'start_time' => '09:00',
+                'end_time' => '17:00',
+                'timezone' => 'Asia/Taipei',
+            ];
+
+            $validator = Validator::make($tooFarFutureData, $rules);
+            expect($validator->fails())->toBeTrue();
+            expect($validator->errors()->has('date'))->toBeTrue();
+
+            // Test maximum valid date (should pass)
+            $maxValidData = [
+                'event_name' => 'Max Valid Date Meeting',
+                'date' => '2200-12-31',
+                'start_time' => '09:00',
+                'end_time' => '17:00',
+                'timezone' => 'Asia/Taipei',
+            ];
+
+            $validator2 = Validator::make($maxValidData, $rules);
+            expect($validator2->errors()->has('date'))->toBeFalse();
+        });
+
         it('validates end time must be after start time', function () {
             $rules = (new StoreEventRequest)->rules();
 
@@ -216,6 +245,7 @@ describe('StoreEventRequest Validation', function () {
             expect($messages['date.required'])->toBe('Please enter a valid date');
             expect($messages['date.date'])->toBe('Please enter a valid date');
             expect($messages['date.after_or_equal'])->toBe('Please enter a valid date');
+            expect($messages['date.before_or_equal'])->toBe('Please enter a valid date');
             expect($messages['start_time.required'])->toBe('Start time is required');
             expect($messages['start_time.date_format'])->toBe('Start time must be in HH:MM format');
             expect($messages['end_time.required'])->toBe('End time is required');
@@ -252,6 +282,18 @@ describe('StoreEventRequest Validation', function () {
 
             $validator2 = Validator::make($invalidTimeData, $rules, $messages);
             expect($validator2->errors()->get('end_time')[0])->toBe('End time must be later than start time');
+
+            // Test far future date error message
+            $farFutureDateData = [
+                'event_name' => 'Test Meeting',
+                'date' => '2201-01-01',
+                'start_time' => '09:00',
+                'end_time' => '17:00',
+                'timezone' => 'Asia/Taipei',
+            ];
+
+            $validator3 = Validator::make($farFutureDateData, $rules, $messages);
+            expect($validator3->errors()->get('date')[0])->toBe('Please enter a valid date');
         });
     });
 

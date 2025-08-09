@@ -33,6 +33,7 @@ class StoreEventRequest extends FormRequest
                 'required',
                 'date',
                 'after_or_equal:today',
+                'before_or_equal:2200-12-31',
             ],
             'start_time' => [
                 'required',
@@ -74,6 +75,7 @@ class StoreEventRequest extends FormRequest
             'date.required' => 'Please enter a valid date',
             'date.date' => 'Please enter a valid date',
             'date.after_or_equal' => 'Please enter a valid date',
+            'date.before_or_equal' => 'Please enter a valid date',
             'start_time.required' => 'Start time is required',
             'start_time.date_format' => 'Start time must be in HH:MM format',
             'end_time.required' => 'End time is required',

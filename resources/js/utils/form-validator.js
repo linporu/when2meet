@@ -132,7 +132,7 @@ export class FormValidator {
 
         // Check year range (reasonable bounds)
         const year = inputDate.getFullYear();
-        if (year > 9999 || year < 1900) {
+        if (year > 2200) {
             this.showFieldError(input, 'Please enter a valid date');
             return false;
         }
