@@ -2,12 +2,19 @@
 
 namespace App\Observers;
 
+use App\Contracts\GroupAvailabilityServiceInterface;
 use App\Models\ParticipantAvailability;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class ParticipantAvailabilityObserver
 {
+    protected GroupAvailabilityServiceInterface $groupAvailabilityService;
+
+    public function __construct(GroupAvailabilityServiceInterface $groupAvailabilityService)
+    {
+        $this->groupAvailabilityService = $groupAvailabilityService;
+    }
+
     /**
      * Handle the ParticipantAvailability "created" event.
      */
@@ -52,34 +59,13 @@ class ParticipantAvailabilityObserver
     {
         $eventId = $availability->participant->event_id;
 
-        if ($this->supportsTags()) {
-            // Clear only dynamic group availability cache, keep static slots
-            Cache::tags(['group_availability', "event_{$eventId}"])->flush();
+        // Clear all group availability cache for this event
+        $this->groupAvailabilityService->clearEventCache($eventId);
 
-            Log::info('GroupAvailabilityCache invalidated', [
-                'event_id' => $eventId,
-                'participant_id' => $availability->participant_id,
-                'reason' => $reason,
-                'cache_tags_cleared' => ['group_availability', "event_{$eventId}"],
-            ]);
-        } else {
-            // For stores without tag support, rely on TTL
-            Log::info('GroupAvailabilityCache invalidated (no tags)', [
-                'event_id' => $eventId,
-                'participant_id' => $availability->participant_id,
-                'reason' => $reason,
-                'note' => 'Cache will expire naturally due to TTL (30 minutes)',
-            ]);
-        }
-    }
-
-    protected function supportsTags(): bool
-    {
-        try {
-            return method_exists(Cache::getStore(), 'supportsTags') &&
-                   Cache::getStore()->supportsTags();
-        } catch (\Exception) {
-            return false;
-        }
+        Log::info('GroupAvailabilityCache cleared', [
+            'event_id' => $eventId,
+            'participant_id' => $availability->participant_id,
+            'reason' => $reason,
+        ]);
     }
 }

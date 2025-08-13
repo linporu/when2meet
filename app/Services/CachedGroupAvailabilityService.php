@@ -48,10 +48,10 @@ class CachedGroupAvailabilityService implements GroupAvailabilityServiceInterfac
 
             // Extract and cache static slots for future use
             $allTimeSlots = $this->extractStaticSlots($result);
-            $this->cacheStaticSlots($staticSlotsKey, $allTimeSlots, $event->id);
+            $this->cacheStaticSlots($staticSlotsKey, $allTimeSlots);
 
             // Cache complete result
-            $this->cacheFullResult($fullResultKey, $result, $event->id, $participantsHash);
+            $this->cacheFullResult($fullResultKey, $result);
 
             $this->logCacheHit('miss_full_calculation', $event->id, microtime(true) - $startTime);
 
@@ -62,7 +62,7 @@ class CachedGroupAvailabilityService implements GroupAvailabilityServiceInterfac
         $result = $this->calculateWithCachedStaticSlots($event, $allTimeSlots);
 
         // Cache the complete result
-        $this->cacheFullResult($fullResultKey, $result, $event->id, $participantsHash);
+        $this->cacheFullResult($fullResultKey, $result);
 
         $this->logCacheHit('partial_cache_hit', $event->id, microtime(true) - $startTime);
 
@@ -218,34 +218,14 @@ class CachedGroupAvailabilityService implements GroupAvailabilityServiceInterfac
         return "group_availability:{$eventId}:{$participantsHash}";
     }
 
-    protected function cacheStaticSlots(string $key, array $data, int $eventId): void
+    protected function cacheStaticSlots(string $key, array $data): void
     {
-        if ($this->supportsTags()) {
-            $this->cache->tags(['event_time_slots', "event_{$eventId}"])
-                ->put($key, $data, $this->staticSlotsTtl);
-        } else {
-            $this->cache->put($key, $data, $this->staticSlotsTtl);
-        }
+        $this->cache->put($key, $data, $this->staticSlotsTtl);
     }
 
-    protected function cacheFullResult(string $key, array $data, int $eventId, string $participantsHash): void
+    protected function cacheFullResult(string $key, array $data): void
     {
-        if ($this->supportsTags()) {
-            $this->cache->tags(['group_availability', "event_{$eventId}"])
-                ->put($key, $data, $this->dynamicResultTtl);
-        } else {
-            $this->cache->put($key, $data, $this->dynamicResultTtl);
-        }
-    }
-
-    protected function supportsTags(): bool
-    {
-        try {
-            return method_exists($this->cache->getStore(), 'supportsTags') &&
-                   $this->cache->getStore()->supportsTags();
-        } catch (\Exception) {
-            return false;
-        }
+        $this->cache->put($key, $data, $this->dynamicResultTtl);
     }
 
     protected function logCacheHit(string $type, int $eventId, float $executionTime): void
@@ -259,7 +239,38 @@ class CachedGroupAvailabilityService implements GroupAvailabilityServiceInterfac
 
     public function clearEventCache(int $eventId): void
     {
-        $this->cache->tags(["event_{$eventId}"])->flush();
+        $this->clearAllEventCache($eventId);
+    }
+
+    protected function clearAllEventCache(int $eventId): void
+    {
+        // Clear static slots cache
+        $staticSlotsKey = $this->getStaticSlotsKey($eventId);
+        $this->cache->forget($staticSlotsKey);
+
+        // Clear all dynamic group availability cache keys
+        // Since we can't pattern match, we'll rely on natural TTL expiration
+        // and clear the most recent cache if we can determine the current hash
+        try {
+            $event = \App\Models\Event::find($eventId);
+            if ($event) {
+                $currentHash = $this->calculateParticipantsHash($event);
+                $currentResultKey = $this->getFullResultKey($eventId, $currentHash);
+                $this->cache->forget($currentResultKey);
+            }
+        } catch (\Exception $e) {
+            // If we can't determine current hash, that's okay
+            // Old cache entries will expire naturally
+            Log::debug('Could not clear specific group availability cache', [
+                'event_id' => $eventId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        Log::info('EventCache cleared', [
+            'event_id' => $eventId,
+            'static_slots_key' => $staticSlotsKey,
+        ]);
     }
 
     public function getCacheStats(int $eventId): array
@@ -269,7 +280,7 @@ class CachedGroupAvailabilityService implements GroupAvailabilityServiceInterfac
         return [
             'static_slots_cached' => $this->cache->has($staticSlotsKey),
             'static_slots_key' => $staticSlotsKey,
-            'cache_tags' => ['event_time_slots', 'group_availability', "event_{$eventId}"],
+            'cache_strategy' => 'direct_key_management',
         ];
     }
 }
