@@ -187,5 +187,17 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
-      - name: Build and run dev environment
-        run: composer run dev
+      - name: Build frontend assets
+        run: pnpm run build
+
+      - name: Cache Laravel configurations
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: Verify application integrity
+        run: |
+          php artisan about --ansi
+          php artisan route:list --compact
+          echo "✅ Build verification completed successfully"
