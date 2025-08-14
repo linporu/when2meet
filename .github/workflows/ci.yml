@@ -196,8 +196,11 @@ jobs:
           php artisan route:cache
           php artisan view:cache
 
+      - name: Create storage link
+        run: php artisan storage:link
+
       - name: Verify application integrity
         run: |
           php artisan about --ansi
-          php artisan route:list --compact
+          php artisan route:list --json
           echo "✅ Build verification completed successfully"
