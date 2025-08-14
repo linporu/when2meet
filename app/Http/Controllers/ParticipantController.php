@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\GroupAvailabilityServiceInterface;
 use App\Http\Requests\UpdateAvailabilityRequest;
 use App\Models\Event;
 use App\Models\EventParticipant;
 use App\Models\ParticipantAvailability;
-use App\Services\GroupAvailabilityService;
 use Carbon\Carbon;
 
 class ParticipantController extends Controller
 {
     public function __construct(
-        private GroupAvailabilityService $groupAvailabilityService
+        private GroupAvailabilityServiceInterface $groupAvailabilityService
     ) {}
 
     /**

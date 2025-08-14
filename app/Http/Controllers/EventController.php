@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\GroupAvailabilityServiceInterface;
 use App\Http\Requests\StoreEventRequest;
 use App\Models\Event;
 use App\Models\EventTimeSlot;
-use App\Services\GroupAvailabilityService;
 use Carbon\Carbon;
 
 class EventController extends Controller
 {
     public function __construct(
-        private GroupAvailabilityService $groupAvailabilityService
+        private GroupAvailabilityServiceInterface $groupAvailabilityService
     ) {}
 
     /**

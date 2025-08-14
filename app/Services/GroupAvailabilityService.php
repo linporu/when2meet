@@ -2,10 +2,11 @@
 
 namespace App\Services;
 
+use App\Contracts\GroupAvailabilityServiceInterface;
 use App\Models\Event;
 use Carbon\Carbon;
 
-class GroupAvailabilityService
+class GroupAvailabilityService implements GroupAvailabilityServiceInterface
 {
     /**
      * Calculate group availability for all participants in 30-minute slots.
@@ -167,5 +168,16 @@ class GroupAvailabilityService
         } catch (\Exception) {
             return Carbon::createFromFormat('H:i', $timeString);
         }
+    }
+
+    public function getCacheStats(int $eventId): array
+    {
+        // Base service doesn't support caching
+        return [];
+    }
+
+    public function clearEventCache(int $eventId): void
+    {
+        // Base service doesn't support caching - no-op
     }
 }
