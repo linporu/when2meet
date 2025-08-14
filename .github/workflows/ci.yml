@@ -3,13 +3,141 @@ name: CI
 on:
   push:
     branches: [dev, main]
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
   pull_request:
     branches: [dev, main]
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
 
 jobs:
-  test:
-    
-    runs-on: ubuntu-latest
+  backend-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: Cache vendor directory
+        id: vendor-cache
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-vendor-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-vendor-
+
+      - name: Install Composer dependencies
+        if: steps.vendor-cache.outputs.cache-hit != 'true'
+        run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Prepare Laravel application
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run backend tests
+        run: composer run test
+
+  backend-lint:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+          coverage: none
+
+      - name: Cache vendor directory
+        id: vendor-cache
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-vendor-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-vendor-
+
+      - name: Install Composer dependencies
+        if: steps.vendor-cache.outputs.cache-hit != 'true'
+        run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Run backend linting
+        run: composer lint-verbose
+
+  frontend-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run frontend tests
+        run: pnpm run test
+
+  frontend-lint:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install pnpm dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run frontend linting
+        run: pnpm run lint-verbose
+
+  build:
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
@@ -32,23 +160,23 @@ jobs:
         with:
           version: 9
 
-      - name: Cache Composer dependencies
+      - name: Cache vendor directory
+        id: vendor-cache
         uses: actions/cache@v4
         with:
-          path: ~/.composer/cache
-          key: composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            composer-
+          path: vendor
+          key: ${{ runner.os }}-vendor-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-vendor-
 
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
-          key: pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
 
       - name: Install Composer dependencies
+        if: steps.vendor-cache.outputs.cache-hit != 'true'
         run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
       - name: Install pnpm dependencies
@@ -62,7 +190,17 @@ jobs:
       - name: Build frontend assets
         run: pnpm run build
 
-      - name: Run tests and linting
+      - name: Cache Laravel configurations
         run: |
-          composer run ci
-          pnpm run ci
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: Create storage link
+        run: php artisan storage:link
+
+      - name: Verify application integrity
+        run: |
+          php artisan about --ansi
+          php artisan route:list --json
+          echo "✅ Build verification completed successfully"
