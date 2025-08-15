@@ -1,0 +1,25 @@
+name: Test SSH Connection
+
+on:
+  workflow_dispatch: # 手動觸發
+
+jobs:
+  test-ssh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test SSH Connection
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            echo "=== SSH Connection Test ==="
+            echo "Connected as: $(whoami)"
+            echo "Current directory: $(pwd)"
+            echo "Server time: $(date)"
+            echo "Disk usage:"
+            df -h /
+            echo "=== Test Completed ==="
