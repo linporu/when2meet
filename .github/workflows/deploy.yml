@@ -1,0 +1,29 @@
+name: Deploy to Production
+
+on:
+  push:
+    tags:
+      - "v*.*.*" # 只有推送版本標籤時才觸發部署 (如 v1.0.0)
+  workflow_dispatch: # 允許手動觸發
+
+jobs:
+  deploy:
+    name: Deploy to GCP VM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            # 賦予部署腳本執行權限
+            chmod +x /var/www/when2meet/scripts/deploy.sh
+            # 執行部署腳本
+            /var/www/when2meet/scripts/deploy.sh
