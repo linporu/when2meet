@@ -52,8 +52,23 @@ log() {
 error_exit() {
     log "ERROR" "$1"
     log "WARNING" "嘗試恢復應用程式狀態..."
+    
     cd "$PROJECT_DIR" 2>/dev/null || true
+    
+    # 回滾程式碼到部署前版本
+    if [ -n "$CURRENT_COMMIT" ]; then
+        log "WARNING" "回滾程式碼到之前版本：$CURRENT_COMMIT"
+        git reset --hard "$CURRENT_COMMIT" 2>/dev/null || true
+        
+        # 重新安裝舊版本套件
+        log "WARNING" "重新安裝舊版本依賴..."
+        composer install --no-dev --optimize-autoloader 2>/dev/null || true
+    fi
+    
+    # 退出維護模式
     php artisan up 2>/dev/null || true
+    
+    log "ERROR" "部署失敗，已嘗試回滾到穩定版本"
     exit 1
 }
 
@@ -70,6 +85,10 @@ main() {
     # 切換到專案目錄
     cd "$PROJECT_DIR" || error_exit "無法進入專案目錄：$PROJECT_DIR"
     
+    # 記錄當前版本以備回滾
+    CURRENT_COMMIT=$(git rev-parse HEAD)
+    log "INFO" "當前版本：$CURRENT_COMMIT"
+    
     # 進入維護模式
     log "INFO" "進入維護模式..."
     php artisan down || error_exit "進入維護模式失敗"
@@ -84,6 +103,9 @@ main() {
     composer install --no-dev --optimize-autoloader || error_exit "Composer install 失敗"
     
     # 執行資料庫遷移
+    log "INFO" "檢查待執行的遷移..."
+    php artisan migrate:status || error_exit "無法檢查遷移狀態"
+    
     log "INFO" "執行資料庫遷移..."
     php artisan migrate --force || error_exit "資料庫遷移失敗"
     
