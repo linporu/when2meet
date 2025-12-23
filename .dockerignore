@@ -1,0 +1,79 @@
+# ============================================
+# Docker Build Context Ignore File
+# Reduces build context size and build time
+# ============================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Environment files
+.env
+.env.*
+!.env.docker
+.env.backup
+.env.production
+
+# Dependencies (will be installed during build)
+/node_modules
+/vendor
+
+# Development tools
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Testing
+/coverage
+.phpunit.cache
+.nyc_output
+
+# Documentation
+*.md
+!README.md
+/docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Logs
+*.log
+/storage/logs/*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+/tmp
+/temp
+
+# Database files (SQLite)
+database/*.sqlite
+database/*.sqlite-journal
+
+# Laravel specific
+/public/hot
+/public/storage
+/storage/*.key
+/storage/debugbar
+
+# Docker files (not needed in build context)
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Compiled assets (already in /public/build)
+# We keep /public/build because it's pre-compiled
+/node_modules
+package-lock.json
+pnpm-lock.yaml
