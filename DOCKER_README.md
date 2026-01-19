@@ -206,5 +206,117 @@ docker compose exec app php artisan config:cache
 
 ---
 
+## 🐳 Docker Hub 推送指南
+
+### 前置準備
+
+1. **註冊 Docker Hub 帳號**
+   - https://hub.docker.com/signup
+
+2. **登入 Docker Hub**
+   ```bash
+   docker login
+   # 輸入你的使用者名稱和密碼
+   ```
+
+### 快速推送（使用自動化腳本）
+
+```bash
+# 設定你的 Docker Hub 使用者名稱
+export DOCKERHUB_USERNAME="your-dockerhub-username"
+
+# 推送 latest 版本
+./docker-push.sh
+
+# 推送特定版本
+./docker-push.sh v1.0.0
+```
+
+腳本會自動：
+- ✅ 建置 production image（無 Xdebug）
+- ✅ 標記 image（latest + 版本號）
+- ✅ 推送到 Docker Hub
+
+### 手動推送
+
+```bash
+# 1. 建置 Image
+docker compose build --no-cache app
+
+# 2. 標記 Image
+docker tag when2meet-app:latest your-dockerhub-username/when2meet:latest
+docker tag when2meet-app:latest your-dockerhub-username/when2meet:v1.0.0
+
+# 3. 推送到 Docker Hub
+docker push your-dockerhub-username/when2meet:latest
+docker push your-dockerhub-username/when2meet:v1.0.0
+```
+
+### 從 Docker Hub 拉取並部署
+
+在生產伺服器上：
+
+```bash
+# 1. 拉取 Image
+docker pull your-dockerhub-username/when2meet:latest
+
+# 2. 建立 docker-compose.yml
+cat > docker-compose.yml << 'EOF'
+services:
+  app:
+    image: your-dockerhub-username/when2meet:latest
+    container_name: when2meet-app
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    environment:
+      APP_NAME: When2Meet
+      APP_ENV: production
+      APP_KEY: base64:your-app-key-here
+      APP_DEBUG: false
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_DATABASE: when2meet
+      DB_USERNAME: when2meet_user
+      DB_PASSWORD: your-secure-password
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: when2meet
+      POSTGRES_USER: when2meet_user
+      POSTGRES_PASSWORD: your-secure-password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-data:
+EOF
+
+# 3. 啟動服務
+docker compose up -d
+
+# 4. 執行資料庫遷移
+docker compose exec app php artisan migrate --force
+docker compose exec app php artisan config:cache
+```
+
+### 版本管理策略
+
+```bash
+# 主要版本（不相容變更）
+./docker-push.sh v2.0.0
+
+# 次要版本（新功能）
+./docker-push.sh v1.1.0
+
+# 修補版本（錯誤修正）
+./docker-push.sh v1.0.1
+```
+
+---
+
 **版本**: v1.0.0
 **最後更新**: 2025-12-23
